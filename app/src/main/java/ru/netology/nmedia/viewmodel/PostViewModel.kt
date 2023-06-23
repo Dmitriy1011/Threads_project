@@ -28,6 +28,9 @@ class PostViewModel(application: Application) : AndroidViewModel(application) {
     private val _postCreated = SingleLiveEvent<Unit>()
     val postCreated: LiveData<Unit>
         get() = _postCreated
+    private val _postEdited = SingleLiveEvent<Unit>()
+    val postEdited: LiveData<Unit>
+        get() = _postEdited
 
     init {
         loadPosts()
@@ -43,8 +46,7 @@ class PostViewModel(application: Application) : AndroidViewModel(application) {
             try {
                 val posts = repository.getAll()
                 _data.postValue(FeedModel(posts = posts, empty = posts.isEmpty(), loading = false))
-            }
-            catch (e: IOException) {
+            } catch (e: IOException) {
                 //получена ошибка
                 _data.postValue(FeedModel(error = true))
             }
@@ -62,7 +64,10 @@ class PostViewModel(application: Application) : AndroidViewModel(application) {
     }
 
     fun edit(post: Post) {
-        edited.value = post
+        thread {
+            edited.value = post
+            _postEdited.postValue(Unit)
+        }
     }
 
     fun changeContent(content: String) {
@@ -78,16 +83,25 @@ class PostViewModel(application: Application) : AndroidViewModel(application) {
         thread {
             val old = _data.value?.posts.orEmpty()
             _data.postValue(
-                _data.value?.copy(posts = _data.value?.posts.orEmpty().map { if(it.id == post.id) post.copy(likedByMe = !post.likedByMe, likes = if(post.likedByMe) post.likes - 1 else post.likes + 1) else it})
+                _data.value?.copy(
+                    posts = _data.value?.posts.orEmpty().map {
+                        if (it.id == post.id) post.copy(
+                            likedByMe = !post.likedByMe,
+                            likes = if (post.likedByMe) post.likes - 1 else post.likes + 1
+                        ) else it
+                    })
             )
             try {
                 _data.postValue(
-                    _data.value?.copy(posts = _data.value?.posts.orEmpty().map { if(it.id == post.id) repository.likeById(post) else it})
+                    _data.value?.copy(
+                        posts = _data.value?.posts.orEmpty()
+                            .map { if (it.id == post.id) repository.likeById(post) else it })
                 )
 
             } catch (e: IOException) {
                 _data.postValue(_data.value?.copy(posts = old))
             }
+                .also { _data::postValue }
         }
     }
 
@@ -102,8 +116,7 @@ class PostViewModel(application: Application) : AndroidViewModel(application) {
             )
             try {
                 repository.removeById(id)
-            }
-            catch (e: IOException) {
+            } catch (e: IOException) {
                 _data.postValue(
                     _data.value?.copy(posts = old)
                 )

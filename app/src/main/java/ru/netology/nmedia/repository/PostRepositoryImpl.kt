@@ -65,6 +65,18 @@ class PostRepositoryImpl : PostRepository {
         }
     }
 
+    override fun edit(post: Post) {
+        val request: Request = Request.Builder()
+            .patch(gson.toJson(post).toRequestBody(jsonType))
+            .url("${BASE_URL}/api/slow/posts")
+            .build()
+
+        return client.newCall(request)
+            .execute()
+            .let { it.body?.string() ?: throw RuntimeException("body is null") }
+            .let { gson.fromJson(it, Post::class.java) }
+    }
+
     override fun save(post: Post) {
         val request: Request = Request.Builder()
             .post(gson.toJson(post).toRequestBody(jsonType))

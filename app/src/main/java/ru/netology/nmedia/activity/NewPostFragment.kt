@@ -31,8 +31,7 @@ class NewPostFragment : Fragment() {
             false
         )
 
-        arguments?.textArg
-            ?.let(binding.edit::setText)
+        arguments?.textArg?.let(binding.edit::setText)
 
         binding.ok.setOnClickListener {
             viewModel.changeContent(binding.edit.text.toString())
