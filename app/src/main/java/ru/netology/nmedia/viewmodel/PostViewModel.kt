@@ -109,7 +109,7 @@ class PostViewModel(application: Application) : AndroidViewModel(application) {
                 _data.postValue(
                     _data.value?.copy(
                         posts = _data.value?.posts.orEmpty()
-                            .map { if (it.id == post.id) repository.li(post) else it })
+                            .map { if (it.id == post.id) value else it })
                 )
             }
 
