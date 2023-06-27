@@ -67,17 +67,7 @@ class PostViewModel(application: Application) : AndroidViewModel(application) {
     }
 
     fun edit(post: Post) {
-        repository.editAsync(post, object : PostRepository.RepositoryCallback<Post> {
-            override fun onSuccess(value: Post) {
-                edited.value = value
-                _postEdited.postValue(Unit)
-            }
-
-            override fun onError(value: Exception) {
-
-            }
-
-        })
+        edited.value = post
     }
 
     fun changeContent(content: String) {
@@ -109,7 +99,7 @@ class PostViewModel(application: Application) : AndroidViewModel(application) {
                 _data.postValue(
                     _data.value?.copy(
                         posts = _data.value?.posts.orEmpty()
-                            .map { if (it.id == post.id) repository.li(post) else it })
+                            .map { if (it.id == post.id) value else it })
                 )
             }
 
@@ -119,7 +109,7 @@ class PostViewModel(application: Application) : AndroidViewModel(application) {
         })
     }
 
-    fun removeById(id: Long) {
+    fun removeById(post: Post, id: Long) {
 
         val old = _data.value?.posts.orEmpty()
         _data.postValue(
@@ -128,27 +118,18 @@ class PostViewModel(application: Application) : AndroidViewModel(application) {
             )
         )
 
-        repository.removeByIdAsync(object : PostRepository.RepositoryCallback<Unit> {
+        repository.removeByIdAsync(post, object : PostRepository.RepositoryCallback<Unit> {
             override fun onSuccess(value: Unit) {
-//                repository.removeByIdAsync(value)
+                _data.postValue(
+                    _data.value?.copy(
+                        posts = _data.value?.posts.orEmpty().filter { it.id != post.id }
+                    )
+                )
             }
 
             override fun onError(value: Exception) {
-                TODO("Not yet implemented")
+                _data.postValue(_data.value?.copy(posts = old)).also { _data::postValue }
             }
         })
-
-//        repository.getAllAsync(object : PostRepository.getAllCallback {
-//            override fun onSuccess(posts: List<Post>) {
-//                repository.removeById(id)
-//            }
-//
-//            override fun onError(e: Exception) {
-//                _data.postValue(
-//                    _data.value?.copy(posts = old)
-//                )
-//            }
-//
-//        })
     }
 }

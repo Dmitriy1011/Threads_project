@@ -45,7 +45,7 @@ class FeedFragment : Fragment() {
             }
 
             override fun onRemove(post: Post) {
-                viewModel.removeById(post.id)
+                viewModel.removeById(post, post.id)
             }
 
             override fun onShare(post: Post) {

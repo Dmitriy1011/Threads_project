@@ -7,14 +7,13 @@ interface PostRepository {
 //    fun getAll(): List<Post>
 //    fun likeById(post: Post): Post
 //    fun save(post: Post)
-//    fun edit(post: Post)
+    fun edit(post: Post)
 //    fun removeById(id: Long)
 
     fun getAllAsync(callback: RepositoryCallback<List<Post>>)
     fun likeByIdAsync(post: Post, callback: RepositoryCallback<Post>)
     fun saveAsync(post: Post, callback: RepositoryCallback<Post>)
-    fun removeByIdAsync(callback: RepositoryCallback<Unit>)
-    fun editAsync(post: Post, callback: RepositoryCallback<Post>)
+    fun removeByIdAsync(post: Post, callback: RepositoryCallback<Unit>)
 
     interface RepositoryCallback<T> {
         fun onSuccess(value: T)

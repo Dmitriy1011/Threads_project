@@ -31,18 +31,6 @@ class PostRepositoryImpl : PostRepository {
     }
 
 
-    //    override fun getAll(): List<Post> {
-//
-//        //GET URL
-//
-//        val request: Request = Request.Builder().url("${BASE_URL}/api/slow/posts").build()
-//
-//        return client.newCall(request)
-//            .execute()
-//            .let { it.body?.string() ?: throw RuntimeException("budy is null") }
-//            .let { gson.fromJson(it, typeToken) }
-//    }
-
     override fun getAllAsync(callback: PostRepository.RepositoryCallback<List<Post>>) {
         val request: Request = Request.Builder()
             .url("${BASE_URL}/api/slow/posts")
@@ -69,35 +57,6 @@ class PostRepositoryImpl : PostRepository {
             )
     }
 
-
-    //    override fun likeById(post: Post): Post {
-//        if (!post.likedByMe) {
-//            val request: Request = Request.Builder()
-//                .post(EMPTY_REQUEST)
-//                .url("${BASE_URL}/api/posts/${post.id}/likes")
-//                .build()
-//
-//            return client.newCall(request)
-//                .execute()
-//                .let { it.body?.string() ?: throw RuntimeException("body is null") }
-//                .let {
-//                    gson.fromJson(it, Post::class.java)
-//                }
-//
-//        } else {
-//            val request: Request = Request.Builder()
-//                .delete(EMPTY_REQUEST)
-//                .url("${BASE_URL}/api/posts/${post.id}/likes")
-//                .build()
-//
-//            return client.newCall(request)
-//                .execute()
-//                .let { it.body?.string() ?: throw RuntimeException("body is null") }
-//                .let {
-//                    gson.fromJson(it, Post::class.java)
-//                }
-//        }
-//    }
 
     override fun likeByIdAsync(post: Post, callback: PostRepository.RepositoryCallback<Post>) {
         if (!post.likedByMe) {
@@ -143,45 +102,14 @@ class PostRepositoryImpl : PostRepository {
         }
     }
 
-//    override fun edit(post: Post) {
-//        val request: Request = Request.Builder()
-//            .patch(gson.toJson(post).toRequestBody(jsonType))
-//            .url("${BASE_URL}/api/slow/posts")
-//            .build()
-//
-//        return client.newCall(request).execute().close()
-//    }
-
-    override fun editAsync(post: Post, callback: PostRepository.RepositoryCallback<Post>) {
+    override fun edit(post: Post) {
         val request: Request = Request.Builder()
             .patch(gson.toJson(post).toRequestBody(jsonType))
             .url("${BASE_URL}/api/slow/posts")
             .build()
 
-        client.newCall(request)
-            .enqueue(
-                object : Callback {
-                    override fun onResponse(call: Call, response: Response) {
-                        val body = response.body?.string() ?: throw RuntimeException("body is null")
-                        callback.onSuccess(gson.fromJson(body, Post::class.java))
-                    }
-
-                    override fun onFailure(call: Call, e: IOException) {
-                        callback.onError(e)
-                    }
-                }
-            )
+        return client.newCall(request).execute().close()
     }
-
-//    override fun save(post: Post) {
-//        val request: Request = Request.Builder()
-//            .post(gson.toJson(post).toRequestBody(jsonType))
-//            .url("${BASE_URL}/api/slow/posts")
-//            .build()
-//
-//        return client.newCall(request).execute().close()
-//    }
-
 
     override fun saveAsync(post: Post, callback: PostRepository.RepositoryCallback<Post>) {
         val request: Request = Request.Builder()
@@ -204,15 +132,7 @@ class PostRepositoryImpl : PostRepository {
             )
     }
 
-
-    //    override fun removeById(id: Long) {
-//        val request: Request =
-//            Request.Builder().delete().url("${BASE_URL}/api/slow/posts/$id").build()
-//
-//        client.newCall(request).execute().close()
-//    }
-
-    override fun removeByIdAsync(callback: PostRepository.RepositoryCallback<Unit>) {
+    override fun removeByIdAsync(post: Post, callback: PostRepository.RepositoryCallback<Unit>) {
         val request: Request = Request.Builder().delete().url("${BASE_URL}/api/slow/posts").build()
 
         client.newCall(request)
