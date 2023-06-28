@@ -104,7 +104,7 @@ class PostViewModel(application: Application) : AndroidViewModel(application) {
             }
 
             override fun onError(e: Exception) {
-                _data.postValue(_data.value?.copy(posts = old)).also { _data::postValue }
+                _data.postValue(_data.value?.copy(posts = old))
             }
         })
     }
@@ -128,7 +128,7 @@ class PostViewModel(application: Application) : AndroidViewModel(application) {
             }
 
             override fun onError(value: Exception) {
-                _data.postValue(_data.value?.copy(posts = old)).also { _data::postValue }
+                _data.postValue(_data.value?.copy(posts = old))
             }
         })
     }
