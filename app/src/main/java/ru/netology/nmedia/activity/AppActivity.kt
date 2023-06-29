@@ -8,16 +8,20 @@ import android.os.Bundle
 import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
 import androidx.navigation.findNavController
+import com.bumptech.glide.Glide
+import com.bumptech.glide.load.resource.drawable.DrawableTransitionOptions
 import com.google.android.gms.common.ConnectionResult
 import com.google.android.gms.common.GoogleApiAvailability
-import com.google.firebase.messaging.FirebaseMessaging
 import ru.netology.nmedia.R
 import ru.netology.nmedia.activity.NewPostFragment.Companion.textArg
+import ru.netology.nmedia.databinding.ActivityAppBinding
+import ru.netology.nmedia.databinding.CardPostBinding
 
 class AppActivity : AppCompatActivity(R.layout.activity_app) {
-
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
+
+        val postBinding = CardPostBinding.inflate(layoutInflater)
 
         requestNotificationsPermission()
 
@@ -43,6 +47,7 @@ class AppActivity : AppCompatActivity(R.layout.activity_app) {
 
         checkGoogleApiAvailability()
     }
+
 
     private fun requestNotificationsPermission() {
         if (Build.VERSION.SDK_INT < Build.VERSION_CODES.TIRAMISU) {
@@ -75,5 +80,6 @@ class AppActivity : AppCompatActivity(R.layout.activity_app) {
 //        FirebaseMessaging.getInstance().token.addOnSuccessListener {
 //            println(it)
 //        }
+
     }
 }
