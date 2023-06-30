@@ -83,6 +83,14 @@
             app:layout_constraintTop_toBottomOf="@id/header"
             tools:text="@sample/posts.json/data/content" />
 
+        <ImageView
+            android:id="@+id/attachmentImage"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            app:layout_constraintTop_toBottomOf="@id/content"
+            app:layout_constraintBottom_toTopOf="@id/footer"
+            />
+
         <androidx.constraintlayout.widget.Barrier
             android:id="@+id/footer"
             android:layout_width="wrap_content"

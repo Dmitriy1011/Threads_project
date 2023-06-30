@@ -3,11 +3,10 @@ package ru.netology.nmedia.adapter
 import android.view.LayoutInflater
 import android.view.ViewGroup
 import android.widget.PopupMenu
+import androidx.core.view.isVisible
 import androidx.recyclerview.widget.DiffUtil
 import androidx.recyclerview.widget.ListAdapter
 import androidx.recyclerview.widget.RecyclerView
-import com.bumptech.glide.Glide
-import com.bumptech.glide.load.resource.drawable.DrawableTransitionOptions
 import ru.netology.nmedia.R
 import ru.netology.nmedia.databinding.CardPostBinding
 import ru.netology.nmedia.dto.Post
@@ -39,7 +38,6 @@ class PostViewHolder(
     private val onInteractionListener: OnInteractionListener,
 ) : RecyclerView.ViewHolder(binding.root) {
 
-    private val urls = listOf("netology.jpg", "sber.jpg", "tcs.jpg", "484.jpg")
     private var index = 0
 
     fun bind(post: Post) {
@@ -51,11 +49,15 @@ class PostViewHolder(
             like.isChecked = post.likedByMe
             like.text = "${post.likes}"
 
-            if (index == urls.size) {
-                index = 0
-            }
+            attachmentImage.isVisible = !post.attachmentUrl.isNullOrBlank()
 
-            var url = "http://10.0.2.2:9999/avatars/${urls[index++]}"
+            var url = "http://10.0.2.2:9999/avatars/${post.authorAvatar}"
+
+            var attachmentUrl = "http:10.0.2.2:9999/images/${post.attachmentUrl}"
+
+            if(post.attachments != null) {
+                binding.attachmentImage.load(attachmentUrl)
+            }
 
             binding.avatar.load(url)
 
