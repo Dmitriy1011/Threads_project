@@ -35,6 +35,11 @@ class PostViewModel(application: Application) : AndroidViewModel(application) {
     val postEdited: LiveData<Unit>
         get() = _postEdited
 
+    val _postCreatedError = SingleLiveEvent<Unit>()
+    val postCreatedError: LiveData<Unit>
+        get() = _postCreatedError
+    
+
     init {
         loadPosts()
     }
@@ -45,26 +50,21 @@ class PostViewModel(application: Application) : AndroidViewModel(application) {
         //данные успешно получены
         repository.getAllAsync(object : PostRepository.RepositoryCallback<List<Post>> {
             override fun onSuccess(value: List<Post>) {
-                _data.postValue(FeedModel(posts = value, empty = value.isEmpty(), loading = false))
+                _data.value = FeedModel(posts = value, empty = value.isEmpty(), loading = false)
             }
 
             override fun onError(e: Exception) {
-                _data.postValue(FeedModel(error = true))
+                _data.value = FeedModel(error = true)
             }
         })
     }
 
     fun save() {
         edited.value?.let {
-            repository.saveAsync(it, object : PostRepository.RepositoryCallback<Post> {
-                override fun onSuccess(value: Post) {
-                    _postCreated.postValue(Unit)
-                }
-
-                override fun onError(value: Exception) {
-
-                }
-            })
+            thread {
+                repository.save(it)
+                _postCreated.postValue(Unit)
+            }
         }
         edited.value = empty
     }
@@ -79,60 +79,15 @@ class PostViewModel(application: Application) : AndroidViewModel(application) {
             return
         }
         edited.value = edited.value?.copy(content = text)
-        //Не папку, а содержимое папки :) Переделать? Лучше да, и google-services лучше не заливать так напрямую, можно пока закомментировать вызов сервиса в AppActivity, чтобы не заморачиваться с секретами
     }
 
-    fun likeById(post: Post) { //вызывается из FeedFragment adapter
-
-        val old = _data.value?.posts.orEmpty()
-
-        _data.postValue(
-            _data.value?.copy(
-                posts = _data.value?.posts.orEmpty().map {
-                    if (it.id == post.id) post.copy(
-                        likedByMe = !post.likedByMe,
-                        likes = if (post.likedByMe) post.likes - 1 else post.likes + 1
-                    ) else it
-                })
-        )
-
-        repository.likeByIdAsync(post, object : PostRepository.RepositoryCallback<Post> {
-
-            override fun onSuccess(value: Post) {
-                _data.postValue(
-                    _data.value?.copy(
-                        posts = _data.value?.posts.orEmpty()
-                            .map { if (it.id == post.id) value else it })
-                )
-            }
-
-            override fun onError(e: Exception) {
-                _data.postValue(_data.value?.copy(posts = old))
-            }
-        })
+    fun likeById(id: Long) { //вызывается из FeedFragment adapter
+        thread { repository.likeById(id) }
     }
 
-    fun removeById(post: Post, id: Long) {
-
-        val old = _data.value?.posts.orEmpty()
-        _data.postValue(
-            _data.value?.copy(posts = _data.value?.posts.orEmpty()
-                .filter { it.id != id }
-            )
-        )
-
-        repository.removeByIdAsync(post, object : PostRepository.RepositoryCallback<Unit> {
-            override fun onSuccess(value: Unit) {
-                _data.postValue(
-                    _data.value?.copy(
-                        posts = _data.value?.posts.orEmpty().filter { it.id != post.id }
-                    )
-                )
-            }
-
-            override fun onError(value: Exception) {
-                _data.postValue(_data.value?.copy(posts = old))
-            }
-        })
+    fun removeById(id: Long) {
+        thread {
+            repository.removeById(id)
+        }
     }
 }
