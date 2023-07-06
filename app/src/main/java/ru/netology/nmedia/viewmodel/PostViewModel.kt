@@ -6,7 +6,6 @@ import ru.netology.nmedia.dto.Post
 import ru.netology.nmedia.model.FeedModel
 import ru.netology.nmedia.repository.*
 import ru.netology.nmedia.util.SingleLiveEvent
-import java.io.IOException
 import kotlin.concurrent.thread
 
 private val empty = Post(
@@ -24,13 +23,17 @@ private val empty = Post(
 class PostViewModel(application: Application) : AndroidViewModel(application) {
     // упрощённый вариант
     private val repository: PostRepository = PostRepositoryImpl()
+
     private val _data = MutableLiveData(FeedModel())
     val data: LiveData<FeedModel>
         get() = _data
+
     val edited = MutableLiveData(empty)
+
     private val _postCreated = SingleLiveEvent<Unit>()
     val postCreated: LiveData<Unit>
         get() = _postCreated
+
     private val _postEdited = SingleLiveEvent<Unit>()
     val postEdited: LiveData<Unit>
         get() = _postEdited
@@ -38,7 +41,7 @@ class PostViewModel(application: Application) : AndroidViewModel(application) {
     val _postCreatedError = SingleLiveEvent<Unit>()
     val postCreatedError: LiveData<Unit>
         get() = _postCreatedError
-    
+
 
     init {
         loadPosts()
@@ -61,16 +64,36 @@ class PostViewModel(application: Application) : AndroidViewModel(application) {
 
     fun save() {
         edited.value?.let {
-            thread {
-                repository.save(it)
-                _postCreated.postValue(Unit)
-            }
+            _data.value = FeedModel(loading = true)
+            repository.saveAsync(
+                it,
+                object : PostRepository.RepositoryCallback<Post> {
+                    override fun onSuccess(value: Post) {
+                        _data?.value?.posts?.map { value }
+                    }
+
+                    override fun onError(value: Exception) {
+                        _data.value = FeedModel(error = true)
+                    }
+
+                })
+            _postCreated.postValue(Unit)
         }
         edited.value = empty
     }
 
     fun edit(post: Post) {
         edited.value = post
+        _data.value = FeedModel(loading = true)
+        repository.editAsync(post, object : PostRepository.RepositoryCallback<Post> {
+            override fun onSuccess(value: Post) {
+                _data?.value?.posts?.map { value }
+            }
+
+            override fun onError(value: Exception) {
+                _data.value = FeedModel(error = true)
+            }
+        })
     }
 
     fun changeContent(content: String) {
@@ -82,12 +105,46 @@ class PostViewModel(application: Application) : AndroidViewModel(application) {
     }
 
     fun likeById(id: Long) { //вызывается из FeedFragment adapter
-        thread { repository.likeById(id) }
+        _data.value = FeedModel(loading = true)
+        repository.likeByIdAsync(
+            id,
+            object : PostRepository.RepositoryCallback<Post> {
+                override fun onSuccess(value: Post) {
+                    _data?.value?.posts?.map { it.likedByMe == value.likedByMe }
+                }
+
+                override fun onError(value: Exception) {
+                    _data.value = FeedModel(error = true)
+                }
+            })
     }
 
+    fun unlikeById(id: Long) {
+        _data.value = FeedModel(loading = true)
+        repository.unlikeByIdAsync(id, object : PostRepository.RepositoryCallback<Post> {
+            override fun onSuccess(value: Post) {
+                _data?.value?.posts?.map { it.likedByMe != value.likedByMe }
+            }
+
+            override fun onError(value: Exception) {
+                _data.value = FeedModel(error = true)
+            }
+        })
+    }
+
+
     fun removeById(id: Long) {
-        thread {
-            repository.removeById(id)
-        }
+        _data.value = FeedModel(loading = true)
+        repository.removeByIdAsync(
+            id,
+            object : PostRepository.RepositoryCallback<Post> {
+                override fun onSuccess(value: Post) {
+                    _data.value?.posts?.filter { it.id != value.id }
+                }
+
+                override fun onError(value: Exception) {
+                    _data.value = FeedModel(error = true)
+                }
+            })
     }
 }
