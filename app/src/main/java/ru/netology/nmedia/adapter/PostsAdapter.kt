@@ -14,10 +14,10 @@ import ru.netology.nmedia.handler.load
 
 interface OnInteractionListener {
     fun onLike(post: Post) {}
-    fun onUnLike(post: Post) {}
     fun onEdit(post: Post) {}
     fun onRemove(post: Post) {}
     fun onShare(post: Post) {}
+    fun onUnLike(post: Post) {}
 }
 
 class PostsAdapter(
@@ -83,7 +83,7 @@ class PostViewHolder(
             }
 
             like.setOnClickListener {
-                onInteractionListener.onLike(post)
+                if(!post.likedByMe) onInteractionListener.onLike(post) else onInteractionListener.onUnLike(post)
             }
 
             share.setOnClickListener {

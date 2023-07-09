@@ -75,7 +75,7 @@ class PostRepositoryImpl : PostRepository {
     }
 
     override fun unlikeByIdAsync(id: Long, callback: PostRepository.RepositoryCallback<Post>) {
-        PostsApi.retrofitService.likeById(id)
+        PostsApi.retrofitService.unlikeById(id)
             .enqueue(
                 object : Callback<Post> {
                     override fun onResponse(call: Call<Post>, response: Response<Post>) {
@@ -107,7 +107,7 @@ class PostRepositoryImpl : PostRepository {
 
 
     override fun editAsync(post: Post, callback: PostRepository.RepositoryCallback<Post>) {
-        PostsApi.retrofitService.savePost(post)
+        PostsApi.retrofitService.editPost(post)
             .enqueue(
                 object : Callback<Post> {
                     override fun onResponse(call: Call<Post>, response: Response<Post>) {
@@ -169,11 +169,11 @@ class PostRepositoryImpl : PostRepository {
     }
 
 
-    override fun removeByIdAsync(id: Long, callback: PostRepository.RepositoryCallback<Post>) {
-        PostsApi.retrofitService.likeById(id)
+    override fun removeByIdAsync(id: Long, callback: PostRepository.RepositoryCallback<Unit>) {
+        PostsApi.retrofitService.deletePost(id)
             .enqueue(
-                object : Callback<Post> {
-                    override fun onResponse(call: Call<Post>, response: Response<Post>) {
+                object : Callback<Unit> {
+                    override fun onResponse(call: Call<Unit>, response: Response<Unit>) {
                         if (!response.isSuccessful) {
                             callback.onError(
                                 java.lang.RuntimeException(
@@ -182,20 +182,13 @@ class PostRepositoryImpl : PostRepository {
                             )
                         }
 
-                        var post = response.body()
-
-                        if (post == null) {
-                            callback.onError(RuntimeException("Body is empty"))
-                            return
-                        }
-
-                        callback.onSuccess(post)
+                        callback.onSuccess(Unit)
                     }
 
-                    override fun onFailure(call: Call<Post>, t: Throwable) {
+
+                    override fun onFailure(call: Call<Unit>, t: Throwable) {
                         callback.onError(Exception(t))
                     }
-
                 }
             )
     }

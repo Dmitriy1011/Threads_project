@@ -5,6 +5,7 @@ import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import android.widget.AdapterView.OnItemClickListener
 import android.widget.Toast
 import androidx.core.view.isVisible
 import androidx.fragment.app.Fragment
@@ -33,7 +34,7 @@ class FeedFragment : Fragment() {
         val binding = FragmentFeedBinding.inflate(inflater, container, false)
         val cardPostBinding = CardPostBinding.inflate(inflater, container, false)
 
-        val adapter = PostsAdapter(object : OnInteractionListener {
+        val adapter = PostsAdapter(object : OnInteractionListener{
             override fun onEdit(post: Post) {
                 viewModel.edit(post)
                 findNavController().navigate(
@@ -44,9 +45,9 @@ class FeedFragment : Fragment() {
                 )
             }
 
-//            override fun onLike(post: Post) {
-//                viewModel.likeById(post.id)
-//            }
+            override fun onLike(post: Post) {
+                viewModel.likeById(post.id)
+            }
 
             override fun onRemove(post: Post) {
                 viewModel.removeById(post.id)

@@ -16,7 +16,7 @@ private val empty = Post(
     likes = 0,
     published = "",
     authorAvatar = "",
-    attachments = null,
+    attachments = "",
     attachmentUrl = ""
 )
 
@@ -28,7 +28,7 @@ class PostViewModel(application: Application) : AndroidViewModel(application) {
     val data: LiveData<FeedModel>
         get() = _data
 
-    val edited = MutableLiveData(empty)
+    private val edited = MutableLiveData(empty)
 
     private val _postCreated = SingleLiveEvent<Unit>()
     val postCreated: LiveData<Unit>
@@ -64,7 +64,6 @@ class PostViewModel(application: Application) : AndroidViewModel(application) {
 
     fun save() {
         edited.value?.let {
-            _data.value = FeedModel(loading = true)
             repository.saveAsync(
                 it,
                 object : PostRepository.RepositoryCallback<Post> {
@@ -83,8 +82,6 @@ class PostViewModel(application: Application) : AndroidViewModel(application) {
     }
 
     fun edit(post: Post) {
-        edited.value = post
-        _data.value = FeedModel(loading = true)
         repository.editAsync(post, object : PostRepository.RepositoryCallback<Post> {
             override fun onSuccess(value: Post) {
                 _data?.value?.posts?.map { value }
@@ -94,6 +91,7 @@ class PostViewModel(application: Application) : AndroidViewModel(application) {
                 _data.value = FeedModel(error = true)
             }
         })
+        edited.value = post
     }
 
     fun changeContent(content: String) {
@@ -101,11 +99,10 @@ class PostViewModel(application: Application) : AndroidViewModel(application) {
         if (edited.value?.content == text) {
             return
         }
-        edited.value = edited.value?.copy(content = text)
+            edited.value = if(edited.value?.attachments.isNullOrBlank()) return else edited.value?.copy(content = text)
     }
 
     fun likeById(id: Long) { //вызывается из FeedFragment adapter
-        _data.value = FeedModel(loading = true)
         repository.likeByIdAsync(
             id,
             object : PostRepository.RepositoryCallback<Post> {
@@ -119,8 +116,7 @@ class PostViewModel(application: Application) : AndroidViewModel(application) {
             })
     }
 
-    fun unlikeById(id: Long) {
-        _data.value = FeedModel(loading = true)
+    fun unLikeById(id: Long) {
         repository.unlikeByIdAsync(id, object : PostRepository.RepositoryCallback<Post> {
             override fun onSuccess(value: Post) {
                 _data?.value?.posts?.map { it.likedByMe != value.likedByMe }
@@ -134,12 +130,11 @@ class PostViewModel(application: Application) : AndroidViewModel(application) {
 
 
     fun removeById(id: Long) {
-        _data.value = FeedModel(loading = true)
         repository.removeByIdAsync(
             id,
-            object : PostRepository.RepositoryCallback<Post> {
-                override fun onSuccess(value: Post) {
-                    _data.value?.posts?.filter { it.id != value.id }
+            object : PostRepository.RepositoryCallback<Unit> {
+                override fun onSuccess(value: Unit) {
+                    _data?.value?.posts?.map { value }
                 }
 
                 override fun onError(value: Exception) {
