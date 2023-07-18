@@ -100,7 +100,6 @@ class PostRepositoryImpl : PostRepository {
                     override fun onFailure(call: Call<Post>, t: Throwable) {
                         callback.onError(Exception(t))
                     }
-
                 }
             )
     }

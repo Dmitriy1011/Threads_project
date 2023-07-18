@@ -17,7 +17,7 @@ interface OnInteractionListener {
     fun onEdit(post: Post) {}
     fun onRemove(post: Post) {}
     fun onShare(post: Post) {}
-    fun onUnLike(post: Post) {}
+    fun onUnLike(post: Post)
 }
 
 class PostsAdapter(

@@ -6,7 +6,6 @@ import ru.netology.nmedia.dto.Post
 import ru.netology.nmedia.model.FeedModel
 import ru.netology.nmedia.repository.*
 import ru.netology.nmedia.util.SingleLiveEvent
-import kotlin.concurrent.thread
 
 private val empty = Post(
     id = 0,
@@ -20,7 +19,9 @@ private val empty = Post(
     attachmentUrl = ""
 )
 
-class PostViewModel(application: Application) : AndroidViewModel(application) {
+class PostViewModel(
+    application: Application,
+) : AndroidViewModel(application) {
     // упрощённый вариант
     private val repository: PostRepository = PostRepositoryImpl()
 
@@ -99,7 +100,8 @@ class PostViewModel(application: Application) : AndroidViewModel(application) {
         if (edited.value?.content == text) {
             return
         }
-            edited.value = if(edited.value?.attachments.isNullOrBlank()) return else edited.value?.copy(content = text)
+        edited.value =
+            edited.value?.copy(content = text, authorAvatar = "", attachmentUrl = "")
     }
 
     fun likeById(id: Long) { //вызывается из FeedFragment adapter
@@ -107,11 +109,12 @@ class PostViewModel(application: Application) : AndroidViewModel(application) {
             id,
             object : PostRepository.RepositoryCallback<Post> {
                 override fun onSuccess(value: Post) {
-                    _data?.value?.posts?.map { it.likedByMe == value.likedByMe }
+                    _data?.value = FeedModel(posts = _data?.value?.posts?.map { if(it.id == value.id) value else it } ?: emptyList())
                 }
 
                 override fun onError(value: Exception) {
                     _data.value = FeedModel(error = true)
+
                 }
             })
     }

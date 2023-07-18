@@ -5,18 +5,14 @@ import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
-import android.widget.AdapterView.OnItemClickListener
-import android.widget.Toast
 import androidx.core.view.isVisible
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.activityViewModels
 import androidx.navigation.fragment.findNavController
-import com.bumptech.glide.Glide
 import ru.netology.nmedia.R
 import ru.netology.nmedia.activity.NewPostFragment.Companion.textArg
 import ru.netology.nmedia.adapter.OnInteractionListener
 import ru.netology.nmedia.adapter.PostsAdapter
-import ru.netology.nmedia.databinding.CardPostBinding
 import ru.netology.nmedia.databinding.FragmentFeedBinding
 import ru.netology.nmedia.dto.Post
 import ru.netology.nmedia.viewmodel.PostViewModel
@@ -29,10 +25,9 @@ class FeedFragment : Fragment() {
         inflater: LayoutInflater,
         container: ViewGroup?,
         savedInstanceState: Bundle?
-    
+
     ): View {
         val binding = FragmentFeedBinding.inflate(inflater, container, false)
-        val cardPostBinding = CardPostBinding.inflate(inflater, container, false)
 
         val adapter = PostsAdapter(object : OnInteractionListener{
             override fun onEdit(post: Post) {
@@ -47,6 +42,10 @@ class FeedFragment : Fragment() {
 
             override fun onLike(post: Post) {
                 viewModel.likeById(post.id)
+            }
+
+            override fun onUnLike(post: Post) {
+                viewModel.unLikeById(post.id)
             }
 
             override fun onRemove(post: Post) {
@@ -86,9 +85,6 @@ class FeedFragment : Fragment() {
             viewModel.loadPosts()
         }
 
-//        viewModel.postCreatedError.observe(viewLifecycleOwner) {
-//            Toast.makeText(context, "Error 404. Not Found", Toast.LENGTH_LONG).show()
-//        }
         return binding.root
     }
 }
