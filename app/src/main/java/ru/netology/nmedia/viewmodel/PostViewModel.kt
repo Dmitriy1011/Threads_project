@@ -39,9 +39,13 @@ class PostViewModel(
     val postEdited: LiveData<Unit>
         get() = _postEdited
 
-    val _postCreatedError = SingleLiveEvent<Unit>()
-    val postCreatedError: LiveData<Unit>
-        get() = _postCreatedError
+    private val _postsLoadError = SingleLiveEvent<String>()
+    val postsLoadError: LiveData<String>
+        get() = _postsLoadError
+
+    private val _savePostError = SingleLiveEvent<String>()
+    val savePostError: LiveData<String>
+        get() = _savePostError
 
 
     init {
@@ -59,6 +63,7 @@ class PostViewModel(
 
             override fun onError(e: Exception) {
                 _data.value = FeedModel(error = true)
+                _postsLoadError.value = "500 Internal Server Error. Cannot load posts"
             }
         })
     }
@@ -74,6 +79,7 @@ class PostViewModel(
 
                     override fun onError(value: Exception) {
                         _data.value = FeedModel(error = true)
+                        _savePostError.value = "404 Not Found. Post cannot be created or saved"
                     }
 
                 })

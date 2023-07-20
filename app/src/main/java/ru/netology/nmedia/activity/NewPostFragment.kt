@@ -39,6 +39,7 @@ class NewPostFragment : Fragment() {
             viewModel.save()
             AndroidUtils.hideKeyboard(requireView())
         }
+
         
 
         viewModel.postCreated.observe(viewLifecycleOwner) {
