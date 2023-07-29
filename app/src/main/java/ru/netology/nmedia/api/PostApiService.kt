@@ -4,6 +4,7 @@ import com.google.firebase.BuildConfig
 import okhttp3.OkHttpClient
 import okhttp3.logging.HttpLoggingInterceptor
 import retrofit2.Call
+import retrofit2.Response
 import retrofit2.Retrofit
 import retrofit2.converter.gson.GsonConverterFactory
 import retrofit2.create
@@ -41,22 +42,22 @@ private val retrofit = Retrofit.Builder()
 
 interface PostApiService {
     @GET("posts")
-    fun getPosts(): Call<List<Post>>
+    suspend fun getPosts(): Response<List<Post>>
 
     @DELETE("posts/{id}")
-    fun deletePost(@Path("id") id: Long): Call<Unit>
+    suspend fun deletePost(@Path("id") id: Long): Response<Unit>
 
     @POST("posts")
-    fun savePost(@Body post: Post): Call<Post>
+    suspend fun savePost(@Body post: Post): Response<Post>
 
     @DELETE("posts/{id}/likes")
-    fun unlikeById(@Path("id") id: Long): Call<Post>
+    suspend fun unlikeById(@Path("id") id: Long): Response<Post>
 
     @POST("posts/{id}/likes")
-    fun likeById(@Path("id") id: Long): Call<Post>
+    suspend fun likeById(@Path("id") id: Long): Response<Post>
 
     @PATCH("posts")
-    fun editPost(@Body post: Post): Call<Post>
+    suspend fun editPost(@Body post: Post): Response<Post>
 }
 
 //для лоступа к Api создаём Singleton c lazy инициализцеий поля

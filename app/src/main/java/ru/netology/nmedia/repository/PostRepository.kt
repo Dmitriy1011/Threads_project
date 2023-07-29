@@ -4,15 +4,11 @@ import androidx.lifecycle.LiveData
 import ru.netology.nmedia.dto.Post
 
 interface PostRepository {
-    fun saveAsync(post: Post, callback: RepositoryCallback<Post>)
-    fun editAsync(post: Post, callback: RepositoryCallback<Post>)
-    fun removeByIdAsync(id: Long, callback: RepositoryCallback<Unit>)
-    fun likeByIdAsync(id: Long, callback: RepositoryCallback<Post>)
-    fun unlikeByIdAsync(id: Long, callback: RepositoryCallback<Post>)
-    fun getAllAsync(callback: RepositoryCallback<List<Post>>)
-
-    interface RepositoryCallback<T> {
-        fun onSuccess(value: T)
-        fun onError(value: Exception)
-    }
+    val data: LiveData<List<Post>> //по этой подписке список постов приходит из базы через viewmodel во фрагмент независимо от того, что происходит с сервером
+    suspend fun save(post: Post): Post
+    suspend fun edit(post: Post): Post
+    suspend fun removeById(id: Long): Unit
+    suspend fun likeById(id: Long): Post
+    suspend fun unlikeById(id: Long): Post
+    suspend fun getAll()
 }
