@@ -11,6 +11,6 @@ data class Post(
     val likes: Int = 0,
     val authorAvatar: String,
     val attachments: String?,
-    val attachmentUrl: String
+    val attachmentUrl: String? = null
 )
 
