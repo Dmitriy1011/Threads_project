@@ -21,8 +21,7 @@ private val empty = Post(
     published = "",
     authorAvatar = "",
     attachments = "",
-    attachmentUrl = "",
-    localId = 0
+    attachmentUrl = ""
 )
 
 class PostViewModel(

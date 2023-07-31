@@ -12,6 +12,5 @@ data class Post(
     val authorAvatar: String,
     val attachments: String?,
     val attachmentUrl: String? = null,
-    val localId: Long
 )
 
