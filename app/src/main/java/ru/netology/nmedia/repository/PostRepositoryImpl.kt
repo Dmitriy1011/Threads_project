@@ -29,7 +29,6 @@ class PostRepositoryImpl(
             }
 
             val bodyWithPosts = response.body() ?: throw RuntimeException("body is null")
-
             dao.insert(bodyWithPosts.map(PostEntity::fromDto))
         } catch (e: IOException) {
             throw NetworkErrorException()
@@ -59,7 +58,6 @@ class PostRepositoryImpl(
 
 
     override suspend fun unlikeById(id: Long): Post {
-
         try {
             dao.likeById(id)
 
@@ -80,15 +78,15 @@ class PostRepositoryImpl(
     override suspend fun edit(post: Post): Post {
 
         try {
-            dao.save(PostEntity.fromDto(post))
-
             val response = PostsApi.retrofitService.editPost(post)
 
             if (!response.isSuccessful) {
                 throw RuntimeException(response.message())
             }
 
-            return response.body() ?: throw RuntimeException("body is null")
+            val result = response.body() ?: throw RuntimeException("body is null")
+            dao.save(PostEntity.fromDto(result))
+            return post
         } catch (e: IOException) {
             throw NetworkErrorException()
         } catch (e: Exception) {
@@ -100,15 +98,15 @@ class PostRepositoryImpl(
     override suspend fun save(post: Post): Post {
 
         try {
-            dao.save(PostEntity.fromDto(post))
-
             val response = PostsApi.retrofitService.savePost(post)
 
             if (!response.isSuccessful) {
                 throw RuntimeException(response.message())
             }
 
-            return response.body() ?: throw RuntimeException("body is null")
+            val result = response.body() ?: throw RuntimeException("body is null")
+            dao.save(PostEntity.fromDto(result))
+            return post
         } catch (e: IOException) {
             throw NetworkErrorException()
         } catch (e: Exception) {
@@ -119,13 +117,13 @@ class PostRepositoryImpl(
 
     override suspend fun removeById(id: Long) {
         try {
-            dao.removeById(id)
-
             val response = PostsApi.retrofitService.deletePost(id)
 
             if (!response.isSuccessful) {
                 throw RuntimeException(response.message())
             }
+
+            dao.removeById(id)
         } catch (e: IOException) {
             throw NetworkErrorException()
         } catch (e: Exception) {
