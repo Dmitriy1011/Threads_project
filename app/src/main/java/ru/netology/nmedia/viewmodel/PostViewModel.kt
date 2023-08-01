@@ -159,7 +159,6 @@ class PostViewModel(
             }
             catch (e: Exception) {
                 _state.value = FeedModelState(error = true)
-                throw NetworkErrorException()
             }
         }
     }
