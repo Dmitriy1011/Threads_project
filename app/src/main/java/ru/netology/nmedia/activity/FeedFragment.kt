@@ -69,8 +69,9 @@ class FeedFragment : Fragment() {
         binding.list.adapter = adapter
 
         viewModel.state.observe(viewLifecycleOwner) { state ->
-            binding.progress.isVisible = state.loading
-            binding.swipeRefresh.isVisible = state.refreshing
+            binding.progress.isVisible = state.loading || state.refreshing
+            binding.swipeRefresh.isVisible = !state.refreshing
+            binding.errorGroup.isVisible = state.error
             if(state.error) {
                 Snackbar.make(binding.root, R.string.error_loading, Snackbar.LENGTH_LONG)
                     .setAction(R.string.retry_loading) {
@@ -95,7 +96,7 @@ class FeedFragment : Fragment() {
 
         binding.swipeRefresh.setOnRefreshListener {
             binding.swipeRefresh.isRefreshing = false
-            viewModel.loadPosts()
+            viewModel.refresh()
         }
 
         viewModel.postsLoadError.observe(viewLifecycleOwner) {

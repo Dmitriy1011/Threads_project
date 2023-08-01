@@ -75,8 +75,7 @@ class PostRepositoryImpl(
         }
     }
 
-    override suspend fun edit(post: Post): Post {
-
+    override suspend fun edit(post: Post) {
         try {
             val response = PostsApi.retrofitService.editPost(post)
 
@@ -86,7 +85,7 @@ class PostRepositoryImpl(
 
             val result = response.body() ?: throw RuntimeException("body is null")
             dao.save(PostEntity.fromDto(result))
-            return post
+
         } catch (e: IOException) {
             throw NetworkErrorException()
         } catch (e: Exception) {
@@ -95,8 +94,7 @@ class PostRepositoryImpl(
     }
 
 
-    override suspend fun save(post: Post): Post {
-
+    override suspend fun save(post: Post) {
         try {
             val response = PostsApi.retrofitService.savePost(post)
 
@@ -106,7 +104,7 @@ class PostRepositoryImpl(
 
             val result = response.body() ?: throw RuntimeException("body is null")
             dao.save(PostEntity.fromDto(result))
-            return post
+
         } catch (e: IOException) {
             throw NetworkErrorException()
         } catch (e: Exception) {
@@ -122,7 +120,6 @@ class PostRepositoryImpl(
             if (!response.isSuccessful) {
                 throw RuntimeException(response.message())
             }
-
             dao.removeById(id)
         } catch (e: IOException) {
             throw NetworkErrorException()
