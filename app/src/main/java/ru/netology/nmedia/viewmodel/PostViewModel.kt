@@ -1,5 +1,6 @@
 package ru.netology.nmedia.viewmodel
 
+import android.accounts.NetworkErrorException
 import android.app.Application
 import androidx.lifecycle.*
 import kotlinx.coroutines.MainScope
@@ -73,6 +74,7 @@ class PostViewModel(
                 _state.value = FeedModelState()
             } catch (e: Exception) {
                 _state.value = FeedModelState(error = true)
+                throw NetworkErrorException()
             }
         }
     }
@@ -81,13 +83,12 @@ class PostViewModel(
         //начинаем загрузку
         viewModelScope.launch {
             _state.value = FeedModelState(loading = true)
-
             try {
                 repository.getAll()
-
                 _state.value = FeedModelState()
             } catch (e: Exception) {
                 _state.value = FeedModelState(error = true)
+                throw NetworkErrorException()
             }
         }
     }
@@ -95,12 +96,21 @@ class PostViewModel(
 
     fun save() {
         viewModelScope.launch {
-            edited.value?.let {
-                repository.save(it)
-                _postCreated.postValue(Unit)
+            _state.value = FeedModelState(loading = true)
+            try {
+                edited.value?.let {
+                    repository.save(it)
+                    _state.value = FeedModelState()
+                    _postCreated.postValue(Unit)
+                }
+
+                edited.value = empty
+            }
+            catch (e: Exception) {
+                _state.value = FeedModelState(error = true)
+                throw NetworkErrorException()
             }
         }
-        edited.value = empty
     }
 
     fun edit(post: Post) {
@@ -118,20 +128,44 @@ class PostViewModel(
 
     fun likeById(id: Long) { //вызывается из FeedFragment adapter
         viewModelScope.launch {
-            repository.likeById(id)
+            _state.value = FeedModelState(loading = true)
+            try {
+                repository.likeById(id)
+                _state.value = FeedModelState()
+            }
+            catch (e: Exception) {
+                _state.value = FeedModelState(error = true)
+                throw NetworkErrorException()
+            }
         }
     }
 
     fun unLikeById(id: Long) {
         viewModelScope.launch {
-            repository.unlikeById(id)
+            _state.value = FeedModelState(loading = true)
+            try {
+                repository.unlikeById(id)
+                _state.value = FeedModelState()
+            }
+            catch (e: Exception) {
+                _state.value = FeedModelState(error = true)
+                throw NetworkErrorException()
+            }
         }
     }
 
 
     fun removeById(id: Long) {
         viewModelScope.launch {
-            repository.removeById(id)
+            _state.value = FeedModelState(loading = true)
+            try {
+                repository.removeById(id)
+                _state.value = FeedModelState()
+            }
+            catch (e: Exception) {
+                _state.value = FeedModelState(error = true)
+                throw NetworkErrorException()
+            }
         }
     }
 
