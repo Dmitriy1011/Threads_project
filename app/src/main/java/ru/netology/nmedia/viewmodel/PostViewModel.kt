@@ -74,7 +74,6 @@ class PostViewModel(
                 _state.value = FeedModelState()
             } catch (e: Exception) {
                 _state.value = FeedModelState(error = true)
-                throw NetworkErrorException()
             }
         }
     }
@@ -88,7 +87,6 @@ class PostViewModel(
                 _state.value = FeedModelState()
             } catch (e: Exception) {
                 _state.value = FeedModelState(error = true)
-                throw NetworkErrorException()
             }
         }
     }
@@ -108,7 +106,6 @@ class PostViewModel(
             }
             catch (e: Exception) {
                 _state.value = FeedModelState(error = true)
-                throw NetworkErrorException()
             }
         }
     }
@@ -135,7 +132,6 @@ class PostViewModel(
             }
             catch (e: Exception) {
                 _state.value = FeedModelState(error = true)
-                throw NetworkErrorException()
             }
         }
     }
@@ -149,7 +145,6 @@ class PostViewModel(
             }
             catch (e: Exception) {
                 _state.value = FeedModelState(error = true)
-                throw NetworkErrorException()
             }
         }
     }
