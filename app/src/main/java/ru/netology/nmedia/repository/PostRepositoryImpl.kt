@@ -32,8 +32,6 @@ class PostRepositoryImpl(
             dao.insert(bodyWithPosts.map(PostEntity::fromDto))
         } catch (e: IOException) {
             throw NetworkErrorException()
-        } catch (e: Exception) {
-            throw UnknownError()
         }
     }
 
@@ -51,8 +49,6 @@ class PostRepositoryImpl(
             return response.body() ?: throw RuntimeException("body is null")
         } catch (e: IOException) {
             throw NetworkErrorException()
-        } catch (e: Exception) {
-            throw UnknownError()
         }
     }
 
@@ -70,8 +66,6 @@ class PostRepositoryImpl(
             return response.body() ?: throw RuntimeException("body is null")
         } catch (e: IOException) {
             throw NetworkErrorException()
-        } catch (e: Exception) {
-            throw UnknownError()
         }
     }
 
@@ -88,8 +82,6 @@ class PostRepositoryImpl(
 
         } catch (e: IOException) {
             throw NetworkErrorException()
-        } catch (e: Exception) {
-            throw UnknownError()
         }
     }
 
@@ -107,8 +99,6 @@ class PostRepositoryImpl(
 
         } catch (e: IOException) {
             throw NetworkErrorException()
-        } catch (e: Exception) {
-            throw UnknownError()
         }
     }
 
@@ -123,8 +113,6 @@ class PostRepositoryImpl(
             dao.removeById(id)
         } catch (e: IOException) {
             throw NetworkErrorException()
-        } catch (e: Exception) {
-            throw UnknownError()
         }
     }
 }
