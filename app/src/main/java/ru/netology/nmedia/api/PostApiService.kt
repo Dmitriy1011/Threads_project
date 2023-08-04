@@ -44,6 +44,9 @@ interface PostApiService {
     @GET("posts")
     suspend fun getPosts(): Response<List<Post>>
 
+    @GET("posts/{id}/newer")
+    suspend fun getNewer(@Path("id") id: Long): Response<List<Post>>
+
     @DELETE("posts/{id}")
     suspend fun deletePost(@Path("id") id: Long): Response<Unit>
 

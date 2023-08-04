@@ -1,10 +1,9 @@
 package ru.netology.nmedia.viewmodel
 
-import android.accounts.NetworkErrorException
 import android.app.Application
 import androidx.lifecycle.*
-import kotlinx.coroutines.MainScope
-import kotlinx.coroutines.cancel
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.launch
 import ru.netology.nmedia.db.AppDb
 import ru.netology.nmedia.dto.Post
@@ -37,9 +36,7 @@ class PostViewModel(
     val state: LiveData<FeedModelState>
         get() = _state
 
-    val data: LiveData<FeedModel> = repository.data.map { //данные приходят из репозитория //data хранит посты, связанные с базой
-        FeedModel(posts = it, empty = it.isEmpty())
-    }
+    val data: LiveData<FeedModel> = repository.data.map(::FeedModel).asLiveData(Dispatchers.Default)
     
     private val edited = MutableLiveData(empty)
 
@@ -59,6 +56,10 @@ class PostViewModel(
     val savePostError: LiveData<String>
         get() = _savePostError
 
+    val newerCount: LiveData<Int> = data.switchMap {
+        val id = it.posts.firstOrNull()?.id ?: 0L
+        repository.getNewerCount(id).asLiveData(Dispatchers.Default)
+    }
 
     init {
         loadPosts()
