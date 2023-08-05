@@ -19,7 +19,23 @@ class PostRepositoryImpl(
     private val dao: PostDao //база для LiveData - dao - data access object //dto - data transfer object
 ) : PostRepository {
 
-    override val data: Flow<List<Post>> = dao.getAll().map(List<PostEntity>::toDto)
+    override val data: Flow<List<Post>> = dao.getAllVisible().map(List<PostEntity>::toDto)
+
+    override suspend fun switchHidden(id: Long) {
+        try {
+            val response = PostsApi.retrofitService.getPosts()
+
+            if (!response.isSuccessful) {
+                throw RuntimeException(response.message()) //выброс ошибки означает завершение выполнения кода
+            }
+
+            val posts = response.body() ?: throw RuntimeException("body is null")
+            dao.switchHiddenStatus(posts.map(PostEntity::fromDto))
+        }
+        catch (e: IOException) {
+            throw NetworkErrorException()
+        }
+    }
 
     override fun getNewerCount(id: Long): Flow<Int> = flow {
         while (true) {

@@ -56,6 +56,7 @@ class PostViewModel(
     val savePostError: LiveData<String>
         get() = _savePostError
 
+
     val newerCount: LiveData<Int> = data.switchMap {
         val id = it.posts.firstOrNull()?.id ?: 0L
         repository.getNewerCount(id).asLiveData(Dispatchers.Default)
@@ -87,6 +88,19 @@ class PostViewModel(
                 repository.getAll()
                 _state.value = FeedModelState()
             } catch (e: Exception) {
+                _state.value = FeedModelState(error = true)
+            }
+        }
+    }
+
+    fun changeHiddenStatus(id: Long) {
+        viewModelScope.launch {
+            _state.value = FeedModelState(loading = true)
+            try {
+                repository.switchHidden(id)
+                _state.value = FeedModelState()
+            }
+            catch (e: Exception) {
                 _state.value = FeedModelState(error = true)
             }
         }

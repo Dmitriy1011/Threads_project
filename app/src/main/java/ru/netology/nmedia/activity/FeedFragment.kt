@@ -122,7 +122,8 @@ class FeedFragment : Fragment() {
         })
 
         binding.toNewPostsButton.setOnClickListener {
-            viewModel.newerCount
+//            viewModel.changeHiddenStatus()
+            val newer = viewModel.newerCount
             binding.toNewPostsButton.isVisible = false
         }
 

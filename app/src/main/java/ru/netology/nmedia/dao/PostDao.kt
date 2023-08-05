@@ -6,6 +6,7 @@ import androidx.room.Insert
 import androidx.room.OnConflictStrategy
 import androidx.room.Query
 import kotlinx.coroutines.flow.Flow
+import ru.netology.nmedia.dto.Post
 import ru.netology.nmedia.entity.PostEntity
 
 @Dao
@@ -18,13 +19,19 @@ interface PostDao {
     @Insert
     suspend fun insert(post: PostEntity)
 
-
     @Query("SELECT COUNT(*) == 0 FROM PostEntity")
     suspend fun isEmpty(): Boolean
 
-
     @Query("SELECT COUNT(*) == 0 FROM PostEntity WHERE hidden = 1")
     suspend fun newerCount(): Int
+
+    @Query("""
+        UPDATE PostEntity SET
+        hidden = 0
+        WHERE hidden = 1
+    """)
+    suspend fun switchHiddenStatus(posts: List<PostEntity>)
+
 
     @Insert(onConflict = OnConflictStrategy.REPLACE)
     suspend fun insert(posts: List<PostEntity>)
@@ -46,7 +53,4 @@ interface PostDao {
 
     @Query("DELETE FROM PostEntity WHERE id = :id")
     suspend fun removeById(id: Long)
-
-
-
 }

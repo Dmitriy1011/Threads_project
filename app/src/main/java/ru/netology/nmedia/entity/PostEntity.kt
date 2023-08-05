@@ -33,3 +33,4 @@ fun List<Post>.toEntity(hidden: Boolean = false): List<PostEntity> = map(PostEnt
     it.copy(hidden = hidden)
 }
 
+
