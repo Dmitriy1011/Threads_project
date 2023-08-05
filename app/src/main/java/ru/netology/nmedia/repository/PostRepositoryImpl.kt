@@ -21,7 +21,7 @@ class PostRepositoryImpl(
 
     override val data: Flow<List<Post>> = dao.getAllVisible().map(List<PostEntity>::toDto)
 
-    override suspend fun switchHidden(id: Long) {
+    override suspend fun switchHidden() {
         try {
             val response = PostsApi.retrofitService.getPosts()
 

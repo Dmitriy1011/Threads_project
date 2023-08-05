@@ -32,7 +32,6 @@ interface PostDao {
     """)
     suspend fun switchHiddenStatus(posts: List<PostEntity>)
 
-
     @Insert(onConflict = OnConflictStrategy.REPLACE)
     suspend fun insert(posts: List<PostEntity>)
 

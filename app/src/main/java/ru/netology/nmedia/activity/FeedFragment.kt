@@ -121,10 +121,18 @@ class FeedFragment : Fragment() {
             }
         })
 
+        binding.countButton.text = viewModel.newerCount.observe(viewLifecycleOwner) {
+            it
+        }.toString()
+
+
+        viewModel.newerCount.observe(viewLifecycleOwner) {
+            if(it == 0) binding.countAndNewPosts.isVisible = false
+        }
+
+
         binding.toNewPostsButton.setOnClickListener {
-//            viewModel.changeHiddenStatus()
-            val newer = viewModel.newerCount
-            binding.toNewPostsButton.isVisible = false
+            viewModel.changeHiddenStatus()
         }
 
         return binding.root

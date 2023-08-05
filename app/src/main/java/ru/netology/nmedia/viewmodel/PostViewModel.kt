@@ -93,11 +93,11 @@ class PostViewModel(
         }
     }
 
-    fun changeHiddenStatus(id: Long) {
+    fun changeHiddenStatus() {
         viewModelScope.launch {
             _state.value = FeedModelState(loading = true)
             try {
-                repository.switchHidden(id)
+                repository.switchHidden()
                 _state.value = FeedModelState()
             }
             catch (e: Exception) {
