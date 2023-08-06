@@ -21,20 +21,8 @@ class PostRepositoryImpl(
 
     override val data: Flow<List<Post>> = dao.getAllVisible().map(List<PostEntity>::toDto)
 
-    override suspend fun switchHidden() {
-        try {
-            val response = PostsApi.retrofitService.getPosts()
-
-            if (!response.isSuccessful) {
-                throw RuntimeException(response.message()) //выброс ошибки означает завершение выполнения кода
-            }
-
-            val posts = response.body() ?: throw RuntimeException("body is null")
-            dao.switchHiddenStatus(posts.map(PostEntity::fromDto))
-        }
-        catch (e: IOException) {
-            throw NetworkErrorException()
-        }
+    override fun switchHidden() {
+        dao.getAllInvisible().map { list -> list.map { it.hidden } }
     }
 
     override fun getNewerCount(id: Long): Flow<Int> = flow {

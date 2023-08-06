@@ -25,12 +25,12 @@ interface PostDao {
     @Query("SELECT COUNT(*) == 0 FROM PostEntity WHERE hidden = 1")
     suspend fun newerCount(): Int
 
-    @Query("""
-        UPDATE PostEntity SET
-        hidden = 0
-        WHERE hidden = 1
-    """)
-    suspend fun switchHiddenStatus(posts: List<PostEntity>)
+
+    @Query("SELECT * FROM PostEntity ORDER BY id DESC")
+    fun getAllInvisible(): Flow<List<PostEntity>>
+
+//    fun switchHiddenFlag(posts: List<PostEntity>)
+
 
     @Insert(onConflict = OnConflictStrategy.REPLACE)
     suspend fun insert(posts: List<PostEntity>)
