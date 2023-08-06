@@ -115,25 +115,22 @@ class FeedFragment : Fragment() {
 
         adapter.registerAdapterDataObserver(object : RecyclerView.AdapterDataObserver() {
             override fun onItemRangeInserted(positionStart: Int, itemCount: Int) {
-                if (positionStart == 0) {
-                    binding.list.smoothScrollToPosition(0)
+                binding.toNewPostsButton.setOnClickListener {
+                    if (positionStart == 0) {
+                        binding.list.smoothScrollToPosition(0)
+                    }
                 }
             }
         })
 
-        binding.countButton.text = viewModel.newerCount.observe(viewLifecycleOwner) {
-            it
-        }.toString()
-
-
         viewModel.newerCount.observe(viewLifecycleOwner) {
-            if(it == 0) binding.countAndNewPosts.isVisible = false
+            viewModel.changeHiddenStatus(it)
+            if(it == 0) {
+                binding.countAndNewPosts.isVisible = false
+            }
+            binding.countButton.text = it.toString()
         }
 
-
-        binding.toNewPostsButton.setOnClickListener {
-            viewModel.changeHiddenStatus()
-        }
 
         return binding.root
     }

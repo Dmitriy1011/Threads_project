@@ -12,5 +12,5 @@ interface PostRepository {
     suspend fun likeById(id: Long): Post
     suspend fun unlikeById(id: Long): Post
     suspend fun getAll()
-    fun switchHidden()
+    fun switchHidden(id: Int)
 }

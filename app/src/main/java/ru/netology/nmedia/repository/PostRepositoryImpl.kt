@@ -21,8 +21,8 @@ class PostRepositoryImpl(
 
     override val data: Flow<List<Post>> = dao.getAllVisible().map(List<PostEntity>::toDto)
 
-    override fun switchHidden() {
-        dao.getAllInvisible().map { list -> list.map { it.hidden } }
+    override fun switchHidden(id: Int) {
+        dao.getAllInvisible(id)
     }
 
     override fun getNewerCount(id: Long): Flow<Int> = flow {
