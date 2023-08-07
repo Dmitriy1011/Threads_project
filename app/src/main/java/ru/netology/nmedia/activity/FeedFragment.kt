@@ -127,6 +127,8 @@ class FeedFragment : Fragment() {
             binding.toNewPostsButton.isVisible = it != 0
         }
 
+        binding.toNewPostsButton.isVisible = false
+
         binding.toNewPostsButton.setOnClickListener {
             binding.toNewPostsButton.isVisible = false
             viewModel.changeHiddenStatus()
