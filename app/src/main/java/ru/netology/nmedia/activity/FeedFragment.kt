@@ -86,6 +86,8 @@ class FeedFragment : Fragment() {
         viewModel.data.observe(viewLifecycleOwner) {
             binding.emptyText.isVisible = it.empty //видимость, если есть флаг empty
             val newPost = it.posts.size > adapter.itemCount //проверка на действие добавления поста, а не другое действие
+            Log.d("posts size: ", it.posts.size.toString())
+            Log.d("adapter itemCount: ", adapter.itemCount.toString())
             adapter.submitList(it.posts) {
                 if(newPost) {
                     binding.list.smoothScrollToPosition(0)
@@ -118,21 +120,16 @@ class FeedFragment : Fragment() {
             Log.d("FeedFragment", "newer count: $it")
         }
 
-        adapter.registerAdapterDataObserver(object : RecyclerView.AdapterDataObserver() {
-            override fun onItemRangeInserted(positionStart: Int, itemCount: Int) {
-                binding.toNewPostsButton.setOnClickListener {
-                    if (positionStart == 0) {
-                        binding.list.smoothScrollToPosition(0)
-                    }
-                }
-            }
-        })
-
         viewModel.newerCount.observe(viewLifecycleOwner) {
             Log.d("FeedFragment", "newer count: $it")
             val text = "${getString(R.string.new_notes)} ($it)"
             binding.toNewPostsButton.text = text
             binding.toNewPostsButton.isVisible = it != 0
+        }
+
+        binding.toNewPostsButton.setOnClickListener {
+            binding.toNewPostsButton.isVisible = false
+            viewModel.changeHiddenStatus(it.id)
         }
 
 

@@ -93,7 +93,7 @@ class PostViewModel(
         }
     }
 
-    fun changeHiddenStatus(id: Int) {
+    fun changeHiddenStatus() {
         viewModelScope.launch {
             _state.value = FeedModelState(loading = true)
             try {
