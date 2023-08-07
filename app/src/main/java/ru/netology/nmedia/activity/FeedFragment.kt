@@ -129,7 +129,7 @@ class FeedFragment : Fragment() {
 
         binding.toNewPostsButton.setOnClickListener {
             binding.toNewPostsButton.isVisible = false
-            viewModel.changeHiddenStatus(it.id)
+            viewModel.changeHiddenStatus()
         }
 
 
