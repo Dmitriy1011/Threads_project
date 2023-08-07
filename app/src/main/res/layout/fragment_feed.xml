@@ -63,27 +63,6 @@
             app:layout_constraintTop_toTopOf="parent"
             />
 
-        <com.google.android.material.button.MaterialButton
-            android:id="@+id/countButton"
-            android:layout_width="40dp"
-            android:layout_height="40dp"
-            app:iconPadding="0dp"
-            android:text="0"
-            android:textColor="@android:color/white"
-            android:background="@android:color/white"
-            app:layout_constraintStart_toEndOf="@id/toNewPostsButton"
-            app:layout_constraintTop_toTopOf="@id/toNewPostsButton"
-            app:layout_constraintBottom_toBottomOf="@id/toNewPostsButton"
-            android:clickable="false"
-            />
-
-        <androidx.constraintlayout.widget.Group
-            android:id="@+id/countAndNewPosts"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            app:constraint_referenced_ids="toNewPostsButton,countButton"
-            />
-
         <ProgressBar
             android:id="@+id/progress"
             android:layout_width="wrap_content"

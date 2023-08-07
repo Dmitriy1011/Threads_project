@@ -85,7 +85,12 @@ class FeedFragment : Fragment() {
 
         viewModel.data.observe(viewLifecycleOwner) {
             binding.emptyText.isVisible = it.empty //видимость, если есть флаг empty
-            adapter.submitList(it.posts)
+            val newPost = it.posts.size > adapter.itemCount //проверка на действие добавления поста, а не другое действие
+            adapter.submitList(it.posts) {
+                if(newPost) {
+                    binding.list.smoothScrollToPosition(0)
+                }
+            }
         }
 
         binding.retryButton.setOnClickListener {
@@ -124,11 +129,10 @@ class FeedFragment : Fragment() {
         })
 
         viewModel.newerCount.observe(viewLifecycleOwner) {
-            viewModel.changeHiddenStatus(it)
-            if(it == 0) {
-                binding.countAndNewPosts.isVisible = false
-            }
-            binding.countButton.text = it.toString()
+            Log.d("FeedFragment", "newer count: $it")
+            val text = "${getString(R.string.new_notes)} ($it)"
+            binding.toNewPostsButton.text = text
+            binding.toNewPostsButton.isVisible = it != 0
         }
 
 

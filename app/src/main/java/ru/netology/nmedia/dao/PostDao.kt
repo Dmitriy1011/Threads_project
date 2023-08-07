@@ -26,8 +26,11 @@ interface PostDao {
     suspend fun newerCount(): Int
 
 
-    @Query("UPDATE PostEntity SET hidden = 0 WHERE id = :id")
-    fun getAllInvisible(id: Int)
+    @Query("UPDATE PostEntity SET hidden = 0 WHERE hidden = 1")
+    fun getAllInvisible()
+
+    @Query("SELECT * FROM PostEntity ORDER BY id DESC LIMIT :count")
+    fun getLatest(count: Long = 1): Flow<List<PostEntity>>
 
     @Insert(onConflict = OnConflictStrategy.REPLACE)
     suspend fun insert(posts: List<PostEntity>)

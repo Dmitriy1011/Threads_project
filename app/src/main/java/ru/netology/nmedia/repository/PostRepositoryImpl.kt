@@ -3,6 +3,7 @@ package ru.netology.nmedia.repository
 import android.accounts.NetworkErrorException
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.flow
 import kotlinx.coroutines.flow.map
 import ru.netology.nmedia.api.PostsApi
@@ -21,16 +22,18 @@ class PostRepositoryImpl(
 
     override val data: Flow<List<Post>> = dao.getAllVisible().map(List<PostEntity>::toDto)
 
-    override fun switchHidden(id: Int) {
-        dao.getAllInvisible(id)
+    override fun switchHidden() {
+        dao.getAllInvisible()
     }
 
-    override fun getNewerCount(id: Long): Flow<Int> = flow {
+    override fun getNewerCount(): Flow<Int> = flow {
         while (true) {
             try {
                 delay(10_000)
 
-                val response = PostsApi.retrofitService.getNewer(id)
+                val postId = dao.getLatest().first().firstOrNull()?.id ?: 0
+
+                val response = PostsApi.retrofitService.getNewer(postId)
 
                 val posts = response.body().orEmpty()
 
