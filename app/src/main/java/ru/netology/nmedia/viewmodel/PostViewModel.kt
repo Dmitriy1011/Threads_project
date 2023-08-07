@@ -59,7 +59,7 @@ class PostViewModel(
 
     val newerCount: LiveData<Int> = data.switchMap {
         val id = it.posts.firstOrNull()?.id ?: 0L
-        repository.getNewerCount(id).asLiveData(Dispatchers.Default)
+        repository.getNewerCount().asLiveData(Dispatchers.Default)
     }
 
     init {
