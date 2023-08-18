@@ -6,12 +6,19 @@ import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.flow
 import kotlinx.coroutines.flow.map
+import okhttp3.MultipartBody
+import okhttp3.RequestBody.Companion.asRequestBody
 import ru.netology.nmedia.api.PostsApi
 import ru.netology.nmedia.dao.PostDao
+import ru.netology.nmedia.dto.Attachment
+import ru.netology.nmedia.dto.AttachmentType
+import ru.netology.nmedia.dto.Media
 import ru.netology.nmedia.dto.Post
+import ru.netology.nmedia.entity.AttachmentEmbeddable
 import ru.netology.nmedia.entity.PostEntity
 import ru.netology.nmedia.entity.toDto
 import ru.netology.nmedia.entity.toEntity
+import java.io.File
 import java.io.IOException
 import java.util.concurrent.CancellationException
 
@@ -24,6 +31,47 @@ class PostRepositoryImpl(
 
     override fun switchHidden() {
         dao.getAllInvisible()
+    }
+
+    override suspend fun saveWithAttachment(post: Post, file: File) {
+        try {
+
+            val media = uploadMedia(file)
+
+            val response = PostsApi.retrofitService.savePost(
+                post.copy(
+                    attachment = AttachmentEmbeddable(
+                        url = media.id,
+                        "",
+                        AttachmentType.IMAGE
+                    )
+                )
+            )
+
+            if (!response.isSuccessful) {
+                throw RuntimeException(response.message())
+            }
+
+            val result = response.body() ?: throw RuntimeException("body is null")
+            dao.save(PostEntity.fromDto(result))
+
+        } catch (e: IOException) {
+            throw NetworkErrorException()
+        }
+    }
+
+    private suspend fun uploadMedia(file: File): Media {
+        val formData = MultipartBody.Part.createFormData(
+            "file", file.name, file.asRequestBody()
+        )
+
+        val response = PostsApi.retrofitService.uploadMedia(formData)
+
+        if (!response.isSuccessful) {
+            throw RuntimeException(response.message())
+        }
+
+        return response.body() ?: throw RuntimeException("body is null")
     }
 
     override fun getNewerCount(): Flow<Int> = flow {
@@ -39,12 +87,10 @@ class PostRepositoryImpl(
 
                 dao.insert(posts.toEntity(true))
 
-                emit(posts.size)
-            }
-            catch (e: CancellationException) {
+                emit(dao.newerCount())
+            } catch (e: CancellationException) {
                 throw e
-            }
-            catch (e: Exception) {
+            } catch (e: Exception) {
                 e.printStackTrace()
             }
         }

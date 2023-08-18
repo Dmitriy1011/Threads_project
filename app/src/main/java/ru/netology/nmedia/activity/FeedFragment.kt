@@ -1,5 +1,6 @@
 package ru.netology.nmedia.activity
 
+import android.app.Activity
 import android.content.Intent
 import android.os.Bundle
 import android.util.Log
@@ -7,11 +8,12 @@ import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import android.widget.Toast
+import androidx.activity.result.contract.ActivityResultContracts
+import androidx.core.net.toFile
 import androidx.core.view.isVisible
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.activityViewModels
 import androidx.navigation.fragment.findNavController
-import androidx.recyclerview.widget.RecyclerView
 import com.google.android.material.snackbar.Snackbar
 import ru.netology.nmedia.R
 import ru.netology.nmedia.activity.NewPostFragment.Companion.textArg
@@ -19,11 +21,26 @@ import ru.netology.nmedia.adapter.OnInteractionListener
 import ru.netology.nmedia.adapter.PostsAdapter
 import ru.netology.nmedia.databinding.FragmentFeedBinding
 import ru.netology.nmedia.dto.Post
+import ru.netology.nmedia.model.PhotoModel
 import ru.netology.nmedia.viewmodel.PostViewModel
 
 class FeedFragment : Fragment() {
 
     private val viewModel: PostViewModel by activityViewModels()
+
+    private val photoLauncher =
+        registerForActivityResult(ActivityResultContracts.StartActivityForResult()) {
+            if (it.resultCode == Activity.RESULT_OK) {
+                val uri = requireNotNull(it.data?.data)
+                viewModel.setPhoto(PhotoModel(uri = uri, file = uri.toFile()))
+            } else {
+                Toast.makeText(
+                    requireContext(),
+                    R.string.pick_photo_error,
+                    Toast.LENGTH_LONG
+                ).show()
+            }
+        }
 
     override fun onCreateView(
         inflater: LayoutInflater,
@@ -33,13 +50,23 @@ class FeedFragment : Fragment() {
     ): View {
         val binding = FragmentFeedBinding.inflate(inflater, container, false)
 
-        val adapter = PostsAdapter(object : OnInteractionListener{
+        val adapter = PostsAdapter(object : OnInteractionListener {
+
             override fun onEdit(post: Post) {
                 viewModel.edit(post)
                 findNavController().navigate(
                     R.id.action_feedFragment_to_newPostFragment,
                     Bundle().apply {
                         textArg = post.content
+                    }
+                )
+            }
+
+            override fun onShowImageAsSeparate(post: Post) {
+                findNavController().navigate(
+                    R.id.action_feedFragment_to_separateImageFragment,
+                    Bundle().apply {
+                        textArg = post.attachment?.url
                     }
                 )
             }
@@ -74,7 +101,7 @@ class FeedFragment : Fragment() {
             binding.progress.isVisible = state.loading || state.refreshing
             binding.swipeRefresh.isVisible = !state.refreshing
             binding.errorGroup.isVisible = state.error
-            if(state.error) {
+            if (state.error) {
                 Snackbar.make(binding.root, R.string.error_loading, Snackbar.LENGTH_LONG)
                     .setAction(R.string.retry_loading) {
                         viewModel.loadPosts()
@@ -85,11 +112,12 @@ class FeedFragment : Fragment() {
 
         viewModel.data.observe(viewLifecycleOwner) {
             binding.emptyText.isVisible = it.empty //видимость, если есть флаг empty
-            val newPost = it.posts.size > adapter.itemCount //проверка на действие добавления поста, а не другое действие
+            val newPost =
+                it.posts.size > adapter.itemCount //проверка на действие добавления поста, а не другое действие
             Log.d("posts size: ", it.posts.size.toString())
             Log.d("adapter itemCount: ", adapter.itemCount.toString())
             adapter.submitList(it.posts) {
-                if(newPost) {
+                if (newPost) {
                     binding.list.smoothScrollToPosition(0)
                 }
             }
@@ -109,11 +137,13 @@ class FeedFragment : Fragment() {
         }
 
         viewModel.postsLoadError.observe(viewLifecycleOwner) {
-            Toast.makeText(requireContext(), viewModel.postsLoadError.value, Toast.LENGTH_LONG).show()
+            Toast.makeText(requireContext(), viewModel.postsLoadError.value, Toast.LENGTH_LONG)
+                .show()
         }
 
         viewModel.savePostError.observe(viewLifecycleOwner) {
-            Toast.makeText(requireContext(), viewModel.savePostError.value, Toast.LENGTH_LONG).show()
+            Toast.makeText(requireContext(), viewModel.savePostError.value, Toast.LENGTH_LONG)
+                .show()
         }
 
         viewModel.newerCount.observe(viewLifecycleOwner) {
@@ -133,6 +163,7 @@ class FeedFragment : Fragment() {
             binding.toNewPostsButton.isVisible = false
             viewModel.changeHiddenStatus()
         }
+
 
 
         return binding.root

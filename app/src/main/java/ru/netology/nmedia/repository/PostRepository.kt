@@ -2,6 +2,7 @@ package ru.netology.nmedia.repository
 
 import kotlinx.coroutines.flow.Flow
 import ru.netology.nmedia.dto.Post
+import java.io.File
 
 interface PostRepository {
     val data: Flow<List<Post>> //по этой подписке список постов приходит из базы через viewmodel во фрагмент независимо от того, что происходит с сервером
@@ -13,4 +14,5 @@ interface PostRepository {
     suspend fun unlikeById(id: Long): Post
     suspend fun getAll()
     fun switchHidden()
+    suspend fun saveWithAttachment(post: Post, file: File)
 }

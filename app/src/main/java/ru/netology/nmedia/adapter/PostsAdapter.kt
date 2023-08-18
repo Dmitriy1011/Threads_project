@@ -4,6 +4,8 @@ import android.view.LayoutInflater
 import android.view.ViewGroup
 import android.widget.PopupMenu
 import androidx.core.view.isVisible
+import androidx.fragment.app.activityViewModels
+import androidx.lifecycle.viewmodel.viewModelFactory
 import androidx.recyclerview.widget.DiffUtil
 import androidx.recyclerview.widget.ListAdapter
 import androidx.recyclerview.widget.RecyclerView
@@ -11,6 +13,8 @@ import ru.netology.nmedia.R
 import ru.netology.nmedia.databinding.CardPostBinding
 import ru.netology.nmedia.dto.Post
 import ru.netology.nmedia.handler.load
+import ru.netology.nmedia.handler.loadAttachmentImage
+import ru.netology.nmedia.viewmodel.PostViewModel
 
 interface OnInteractionListener {
     fun onLike(post: Post) {}
@@ -18,6 +22,8 @@ interface OnInteractionListener {
     fun onRemove(post: Post) {}
     fun onShare(post: Post) {}
     fun onUnLike(post: Post)
+
+    fun onShowImageAsSeparate(post: Post)
 }
 
 class PostsAdapter(
@@ -50,14 +56,13 @@ class PostViewHolder(
             like.isChecked = post.likedByMe
             like.text = "${post.likes}"
 
-            attachmentImage.isVisible = !post.attachmentUrl.isNullOrBlank()
-
             var url = "http://10.0.2.2:9999/avatars/${post.authorAvatar}"
+            var attachmentUrl = "http://10.0.2.2:9999/media/${post.attachment?.url}"
 
-            var attachmentUrl = "http:10.0.2.2:9999/images/${post.attachmentUrl}"
+            binding.attachmentImage.loadAttachmentImage(attachmentUrl)
 
-            if(post.attachments != null) {
-                binding.attachmentImage.load(attachmentUrl)
+            attachmentImage.setOnClickListener {
+                onInteractionListener.onShowImageAsSeparate(post)
             }
 
             binding.avatar.load(url)

@@ -24,4 +24,10 @@
         <item name="android:minHeight">@dimen/icon_button_min_size</item>
     </style>
 
+    <style name="Widget.AppTheme.LikeSeparate" parent="Widget.MaterialComponents.Button.TextButton.Icon">
+        <item name="iconTint">@color/icon_separate_button_tint</item>
+        <item name="android:minWidth">@dimen/icon_button_min_size</item>
+        <item name="android:minHeight">@dimen/icon_button_min_size</item>
+    </style>
+
 </resources>

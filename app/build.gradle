@@ -67,7 +67,9 @@ dependencies {
     def glide_version = "4.14.2"
     def retrofit_version = "2.9.0"
     def retrofitgson_version = "2.9.0"
+    def imagepicker_version = "2.1"
 
+    implementation "com.github.dhaval2404:imagepicker:$imagepicker_version"
     implementation fileTree(dir: "libs", include: ["*.jar"])
     implementation "androidx.core:core-ktx:$core_version"
     implementation "androidx.appcompat:appcompat:$appcompat_version"

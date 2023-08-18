@@ -1,6 +1,6 @@
 package ru.netology.nmedia.dto
 
-import java.util.Objects
+import ru.netology.nmedia.entity.AttachmentEmbeddable
 
 data class Post(
     val id: Long,
@@ -10,7 +10,11 @@ data class Post(
     val likedByMe: Boolean,
     val likes: Int = 0,
     val authorAvatar: String,
-    val attachments: String?,
-    val attachmentUrl: String? = null,
+    val attachment: AttachmentEmbeddable? = null
 )
 
+data class Attachment(
+    val url: String,
+    val description: String?,
+    val type: AttachmentType
+)

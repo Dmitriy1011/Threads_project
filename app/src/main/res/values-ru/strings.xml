@@ -24,4 +24,6 @@
     <string name="body_is_null">body is null</string>
     <string name="new_notes">Свежие записи</string>
     <string name="save_menu">save</string>
+    <string name="clear">Clear</string>
+    <string name="pick_photo_error">pick photo error</string>
 </resources>

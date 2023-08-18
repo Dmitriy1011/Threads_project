@@ -22,7 +22,7 @@ interface PostDao {
     @Query("SELECT COUNT(*) == 0 FROM PostEntity")
     suspend fun isEmpty(): Boolean
 
-    @Query("SELECT COUNT(*) == 0 FROM PostEntity WHERE hidden = 1")
+    @Query("SELECT COUNT(*) FROM PostEntity WHERE hidden = 1")
     suspend fun newerCount(): Int
 
 

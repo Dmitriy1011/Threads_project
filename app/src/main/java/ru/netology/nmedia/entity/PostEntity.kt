@@ -1,8 +1,11 @@
 package ru.netology.nmedia.entity
 
+import androidx.room.Embedded
 import androidx.room.Entity
 import androidx.room.PrimaryKey
 import retrofit2.http.POST
+import ru.netology.nmedia.dto.Attachment
+import ru.netology.nmedia.dto.AttachmentType
 import ru.netology.nmedia.dto.Post
 import java.util.Objects
 
@@ -16,17 +19,51 @@ data class PostEntity(
     val likedByMe: Boolean,
     val likes: Int = 0,
     val authorAvatar: String,
-    val attachments: String?,
-    val attachmentUrl: String? = null,
-    val hidden: Boolean = false
+    val hidden: Boolean = false,
+    @Embedded
+    val attachment: AttachmentEmbeddable?
 ) {
-    fun toDto() = Post(id, author, content, published, likedByMe, likes, authorAvatar, attachments, attachmentUrl)
+    fun toDto() = Post(
+        id,
+        author,
+        content,
+        published,
+        likedByMe,
+        likes,
+        authorAvatar
+    )
 
     companion object {
         fun fromDto(dto: Post) =
-            PostEntity(dto.id, dto.author, dto.content, dto.published, dto.likedByMe, dto.likes, dto.authorAvatar, dto.attachments, dto.attachmentUrl)
+            PostEntity(
+                dto.id,
+                dto.author,
+                dto.content,
+                dto.published,
+                dto.likedByMe,
+                dto.likes,
+                dto.authorAvatar,
+                false,
+                dto.attachment
+            )
     }
 }
+
+
+data class AttachmentEmbeddable(
+    val url: String,
+    val description: String?,
+    val type: AttachmentType
+) {
+    fun toDto() = Attachment(url, description, type)
+    companion object {
+        fun fromDto(dto: Attachment?) = dto?.let {
+            AttachmentEmbeddable(it.url, it.description, it.type)
+        }
+    }
+}
+
+
 
 fun List<PostEntity>.toDto(): List<Post> = map(PostEntity::toDto)
 fun List<Post>.toEntity(hidden: Boolean = false): List<PostEntity> = map(PostEntity::fromDto).map {

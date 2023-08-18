@@ -9,6 +9,7 @@ import ru.netology.nmedia.db.AppDb
 import ru.netology.nmedia.dto.Post
 import ru.netology.nmedia.model.FeedModel
 import ru.netology.nmedia.model.FeedModelState
+import ru.netology.nmedia.model.PhotoModel
 import ru.netology.nmedia.repository.*
 import ru.netology.nmedia.util.SingleLiveEvent
 
@@ -20,8 +21,6 @@ private val empty = Post(
     likes = 0,
     published = "",
     authorAvatar = "",
-    attachments = "",
-    attachmentUrl = ""
 )
 
 class PostViewModel(
@@ -37,7 +36,7 @@ class PostViewModel(
         get() = _state
 
     val data: LiveData<FeedModel> = repository.data.map(::FeedModel).asLiveData(Dispatchers.Default)
-    
+
     private val edited = MutableLiveData(empty)
 
     private val _postCreated = SingleLiveEvent<Unit>()
@@ -57,6 +56,19 @@ class PostViewModel(
         get() = _savePostError
 
 
+    private val _photo = MutableLiveData<PhotoModel?>()
+    val photo: LiveData<PhotoModel?>
+        get() = _photo
+
+
+    fun setPhoto(photoModel: PhotoModel) {
+        _photo.value = photoModel
+    }
+
+    fun clearPhoto() {
+        _photo.value = null
+    }
+
     val newerCount: LiveData<Int> = data.switchMap {
         val id = it.posts.firstOrNull()?.id ?: 0L
         repository.getNewerCount().asLiveData(Dispatchers.Default)
@@ -69,10 +81,8 @@ class PostViewModel(
     fun refresh() {
         viewModelScope.launch {
             _state.value = FeedModelState(refreshing = true)
-
             try {
                 repository.getAll()
-
                 _state.value = FeedModelState()
             } catch (e: Exception) {
                 _state.value = FeedModelState(error = true)
@@ -99,8 +109,7 @@ class PostViewModel(
             try {
                 repository.switchHidden()
                 _state.value = FeedModelState()
-            }
-            catch (e: Exception) {
+            } catch (e: Exception) {
                 _state.value = FeedModelState(error = true)
             }
         }
@@ -108,21 +117,23 @@ class PostViewModel(
 
 
     fun save() {
-        viewModelScope.launch {
-            _state.value = FeedModelState(loading = true)
-            try {
-                edited.value?.let {
-                    repository.save(it)
-                    _state.value = FeedModelState()
-                    _postCreated.postValue(Unit)
-                }
+        edited.value?.let {
+            _postCreated.postValue(Unit)
+            viewModelScope.launch {
+                try {
+                    _photo.value?.let { photoModel -> //запрашиваем photo из value
+                        repository.saveWithAttachment(it, photoModel.file)
+                    } ?: run {
+                        repository.save(it)
+                    }
 
-                edited.value = empty
-            }
-            catch (e: Exception) {
-                _state.value = FeedModelState(error = true)
+                    _state.value = FeedModelState()
+                } catch (e: Exception) {
+                    _state.value = FeedModelState(error = true)
+                }
             }
         }
+        edited.value = empty
     }
 
     fun edit(post: Post) {
@@ -135,7 +146,7 @@ class PostViewModel(
             return
         }
         edited.value =
-            edited.value?.copy(content = text, authorAvatar = "", attachmentUrl = "")
+            edited.value?.copy(content = text, authorAvatar = "")
     }
 
     fun likeById(id: Long) { //вызывается из FeedFragment adapter
@@ -144,8 +155,7 @@ class PostViewModel(
             try {
                 repository.likeById(id)
                 _state.value = FeedModelState()
-            }
-            catch (e: Exception) {
+            } catch (e: Exception) {
                 _state.value = FeedModelState(error = true)
             }
         }
@@ -157,8 +167,7 @@ class PostViewModel(
             try {
                 repository.unlikeById(id)
                 _state.value = FeedModelState()
-            }
-            catch (e: Exception) {
+            } catch (e: Exception) {
                 _state.value = FeedModelState(error = true)
             }
         }
@@ -171,8 +180,7 @@ class PostViewModel(
             try {
                 repository.removeById(id)
                 _state.value = FeedModelState()
-            }
-            catch (e: Exception) {
+            } catch (e: Exception) {
                 _state.value = FeedModelState(error = true)
             }
         }
