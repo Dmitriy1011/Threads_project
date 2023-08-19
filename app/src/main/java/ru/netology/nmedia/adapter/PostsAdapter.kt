@@ -1,5 +1,6 @@
 package ru.netology.nmedia.adapter
 
+import android.util.Log
 import android.view.LayoutInflater
 import android.view.ViewGroup
 import android.widget.PopupMenu
@@ -9,6 +10,7 @@ import androidx.lifecycle.viewmodel.viewModelFactory
 import androidx.recyclerview.widget.DiffUtil
 import androidx.recyclerview.widget.ListAdapter
 import androidx.recyclerview.widget.RecyclerView
+import ru.netology.nmedia.BuildConfig
 import ru.netology.nmedia.R
 import ru.netology.nmedia.databinding.CardPostBinding
 import ru.netology.nmedia.dto.Post
@@ -56,8 +58,13 @@ class PostViewHolder(
             like.isChecked = post.likedByMe
             like.text = "${post.likes}"
 
-            var url = "http://10.0.2.2:9999/avatars/${post.authorAvatar}"
-            var attachmentUrl = "http://10.0.2.2:9999/media/${post.attachment?.url}"
+            binding.attachmentImage.isVisible = !post.attachment?.url.isNullOrBlank()
+
+            var url = "${BuildConfig.BASE_URL}avatars/${post.authorAvatar}"
+            var attachmentUrl = "${BuildConfig.BASE_URL}media/${post.attachment?.url}"
+
+            Log.d("url: ", url)
+            Log.d("attachmentUrl: ", attachmentUrl)
 
             binding.attachmentImage.loadAttachmentImage(attachmentUrl)
 

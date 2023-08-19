@@ -15,6 +15,7 @@ import androidx.fragment.app.Fragment
 import androidx.fragment.app.activityViewModels
 import androidx.navigation.fragment.findNavController
 import com.google.android.material.snackbar.Snackbar
+import ru.netology.nmedia.BuildConfig
 import ru.netology.nmedia.R
 import ru.netology.nmedia.activity.NewPostFragment.Companion.textArg
 import ru.netology.nmedia.adapter.OnInteractionListener
@@ -66,7 +67,7 @@ class FeedFragment : Fragment() {
                 findNavController().navigate(
                     R.id.action_feedFragment_to_separateImageFragment,
                     Bundle().apply {
-                        textArg = post.attachment?.url
+                        textArg = "${BuildConfig.BASE_URL}media/${post.attachment?.url}"
                     }
                 )
             }
@@ -163,8 +164,6 @@ class FeedFragment : Fragment() {
             binding.toNewPostsButton.isVisible = false
             viewModel.changeHiddenStatus()
         }
-
-
 
         return binding.root
     }

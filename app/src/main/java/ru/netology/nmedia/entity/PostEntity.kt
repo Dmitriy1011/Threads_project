@@ -30,7 +30,8 @@ data class PostEntity(
         published,
         likedByMe,
         likes,
-        authorAvatar
+        authorAvatar,
+        attachment
     )
 
     companion object {
