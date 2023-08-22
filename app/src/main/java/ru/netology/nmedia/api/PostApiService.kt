@@ -11,6 +11,8 @@ import retrofit2.converter.gson.GsonConverterFactory
 import retrofit2.create
 import retrofit2.http.Body
 import retrofit2.http.DELETE
+import retrofit2.http.Field
+import retrofit2.http.FormUrlEncoded
 import retrofit2.http.GET
 import retrofit2.http.Multipart
 import retrofit2.http.PATCH
@@ -19,6 +21,7 @@ import retrofit2.http.Part
 import retrofit2.http.Path
 import ru.netology.nmedia.dto.Media
 import ru.netology.nmedia.dto.Post
+import ru.netology.nmedia.dto.Token
 import java.util.concurrent.TimeUnit
 
 private const val BASE_URL = "http://10.0.2.2:9999/api/slow/"
@@ -69,6 +72,10 @@ interface PostApiService {
     @Multipart
     @POST("media")
     suspend fun uploadMedia(@Part file: MultipartBody.Part): Response<Media>
+
+    @FormUrlEncoded
+    @POST("user/edit")
+    suspend fun updateUser(@Field("login") login: String, @Field("pass") pass: String): Response<Token>
 }
 
 //для лоступа к Api создаём Singleton c lazy инициализцеий поля

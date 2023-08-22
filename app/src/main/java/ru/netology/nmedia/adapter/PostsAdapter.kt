@@ -60,6 +60,8 @@ class PostViewHolder(
 
             binding.attachmentImage.isVisible = !post.attachment?.url.isNullOrBlank()
 
+            menu.isVisible = post.ownedByMe
+
             var url = "${BuildConfig.BASE_URL}avatars/${post.authorAvatar}"
             var attachmentUrl = "${BuildConfig.BASE_URL}media/${post.attachment?.url}"
 

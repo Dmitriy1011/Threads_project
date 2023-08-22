@@ -3,8 +3,10 @@ package ru.netology.nmedia.viewmodel
 import android.app.Application
 import androidx.lifecycle.*
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.flow.flatMapLatest
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.launch
+import ru.netology.nmedia.Auth.AppAuth
 import ru.netology.nmedia.db.AppDb
 import ru.netology.nmedia.dto.Post
 import ru.netology.nmedia.model.FeedModel
@@ -15,12 +17,14 @@ import ru.netology.nmedia.util.SingleLiveEvent
 
 private val empty = Post(
     id = 0,
+    authorId = 0,
     content = "",
     author = "",
     likedByMe = false,
     likes = 0,
     published = "",
     authorAvatar = "",
+    ownedByMe = false,
 )
 
 class PostViewModel(
@@ -35,7 +39,14 @@ class PostViewModel(
     val state: LiveData<FeedModelState>
         get() = _state
 
-    val data: LiveData<FeedModel> = repository.data.map(::FeedModel).asLiveData(Dispatchers.Default)
+    val data: LiveData<FeedModel> = AppAuth.getInstance().state.flatMapLatest { token ->
+        repository.data
+            .map { posts ->
+                FeedModel(posts.map {
+                    it.copy(ownedByMe = it.authorId == token?.id)
+                })
+            }
+    }.asLiveData(Dispatchers.Default)
 
     private val edited = MutableLiveData(empty)
 

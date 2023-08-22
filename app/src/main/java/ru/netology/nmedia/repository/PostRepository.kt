@@ -2,6 +2,7 @@ package ru.netology.nmedia.repository
 
 import kotlinx.coroutines.flow.Flow
 import ru.netology.nmedia.dto.Post
+import ru.netology.nmedia.dto.Token
 import java.io.File
 
 interface PostRepository {
@@ -15,4 +16,5 @@ interface PostRepository {
     suspend fun getAll()
     fun switchHidden()
     suspend fun saveWithAttachment(post: Post, file: File)
+    suspend fun setIdAndTokenToAuth(id: String, token: String)
 }

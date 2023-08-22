@@ -1,6 +1,8 @@
 package ru.netology.nmedia.repository
 
 import android.accounts.NetworkErrorException
+import androidx.lifecycle.asLiveData
+import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.first
@@ -8,12 +10,14 @@ import kotlinx.coroutines.flow.flow
 import kotlinx.coroutines.flow.map
 import okhttp3.MultipartBody
 import okhttp3.RequestBody.Companion.asRequestBody
+import ru.netology.nmedia.Auth.AppAuth
 import ru.netology.nmedia.api.PostsApi
 import ru.netology.nmedia.dao.PostDao
 import ru.netology.nmedia.dto.Attachment
 import ru.netology.nmedia.dto.AttachmentType
 import ru.netology.nmedia.dto.Media
 import ru.netology.nmedia.dto.Post
+import ru.netology.nmedia.dto.Token
 import ru.netology.nmedia.entity.AttachmentEmbeddable
 import ru.netology.nmedia.entity.PostEntity
 import ru.netology.nmedia.entity.toDto
@@ -31,6 +35,22 @@ class PostRepositoryImpl(
 
     override fun switchHidden() {
         dao.getAllInvisible()
+    }
+
+    override suspend fun setIdAndTokenToAuth(id: String, token: String) {
+        try {
+            val response = PostsApi.retrofitService.updateUser(id, token)
+
+            if (!response.isSuccessful) {
+                throw RuntimeException(response.message())
+            }
+
+            val result = response.body() ?: throw RuntimeException("body is null")
+            AppAuth.getInstance().setAuth(result.id, result.token)
+        }
+        catch (e: IOException) {
+            throw NetworkErrorException()
+        }
     }
 
     override suspend fun saveWithAttachment(post: Post, file: File) {

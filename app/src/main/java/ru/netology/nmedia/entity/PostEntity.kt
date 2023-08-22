@@ -13,6 +13,7 @@ import java.util.Objects
 data class PostEntity(
     @PrimaryKey(autoGenerate = true)
     val id: Long,
+    val authorId: Long,
     val author: String,
     val content: String,
     val published: String,
@@ -24,20 +25,22 @@ data class PostEntity(
     val attachment: AttachmentEmbeddable?
 ) {
     fun toDto() = Post(
-        id,
-        author,
-        content,
-        published,
-        likedByMe,
-        likes,
-        authorAvatar,
-        attachment
+        id = id,
+        authorId = authorId,
+        author = author,
+        content = content,
+        published = published,
+        likedByMe = likedByMe,
+        likes = likes,
+        authorAvatar = authorAvatar,
+        attachment = attachment
     )
 
     companion object {
         fun fromDto(dto: Post) =
             PostEntity(
                 dto.id,
+                dto.authorId,
                 dto.author,
                 dto.content,
                 dto.published,
