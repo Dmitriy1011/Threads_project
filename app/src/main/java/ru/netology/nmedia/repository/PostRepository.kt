@@ -1,8 +1,8 @@
 package ru.netology.nmedia.repository
 
 import kotlinx.coroutines.flow.Flow
+import okhttp3.RequestBody
 import ru.netology.nmedia.dto.Post
-import ru.netology.nmedia.dto.Token
 import java.io.File
 
 interface PostRepository {
@@ -17,4 +17,6 @@ interface PostRepository {
     fun switchHidden()
     suspend fun saveWithAttachment(post: Post, file: File)
     suspend fun setIdAndTokenToAuth(id: String, token: String)
+    suspend fun setDataForRegistration(login: String, password: String, name: String)
+    suspend fun registerWithAvatar(login: String, pass: String, name: String, file: File)
 }

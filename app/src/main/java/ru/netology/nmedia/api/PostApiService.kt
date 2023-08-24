@@ -3,8 +3,8 @@ package ru.netology.nmedia.api
 import com.google.firebase.BuildConfig
 import okhttp3.MultipartBody
 import okhttp3.OkHttpClient
+import okhttp3.RequestBody
 import okhttp3.logging.HttpLoggingInterceptor
-import retrofit2.Call
 import retrofit2.Response
 import retrofit2.Retrofit
 import retrofit2.converter.gson.GsonConverterFactory
@@ -29,7 +29,7 @@ private const val BASE_URL = "http://10.0.2.2:9999/api/slow/"
 private val client = OkHttpClient.Builder()
     .connectTimeout(30, TimeUnit.SECONDS)
     .addInterceptor(HttpLoggingInterceptor().apply {
-        level = if(BuildConfig.DEBUG) {
+        level = if (BuildConfig.DEBUG) {
             HttpLoggingInterceptor.Level.BODY
         } else {
             HttpLoggingInterceptor.Level.NONE
@@ -75,13 +75,33 @@ interface PostApiService {
 
     @FormUrlEncoded
     @POST("user/edit")
-    suspend fun updateUser(@Field("login") login: String, @Field("pass") pass: String): Response<Token>
+    suspend fun updateUser(
+        @Field("login") login: String,
+        @Field("pass") pass: String
+    ): Response<Token>
+
+    @FormUrlEncoded
+    @POST("user/registration")
+    suspend fun registerUser(
+        @Field("login") login: String,
+        @Field("pass") pass: String,
+        @Field("name") name: String
+    ): Response<Token>
+
+    @Multipart
+    @POST("users/registration")
+    suspend fun registerWithPhoto(
+        @Part("login") login: RequestBody,
+        @Part("pass") pass: RequestBody,
+        @Part("name") name: RequestBody,
+        @Part("media") media: MultipartBody.Part
+    ): Response<Token>
 }
 
 //для лоступа к Api создаём Singleton c lazy инициализцеий поля
 
 object PostsApi {
-    val retrofitService : PostApiService by lazy { //by lazy - создаем этот объект при первом обращении
+    val retrofitService: PostApiService by lazy { //by lazy - создаем этот объект при первом обращении
         retrofit.create()
     }
 }

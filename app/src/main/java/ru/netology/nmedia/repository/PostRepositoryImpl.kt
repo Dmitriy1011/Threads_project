@@ -1,23 +1,22 @@
 package ru.netology.nmedia.repository
 
 import android.accounts.NetworkErrorException
-import androidx.lifecycle.asLiveData
-import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.flow
 import kotlinx.coroutines.flow.map
+import okhttp3.MediaType.Companion.toMediaType
 import okhttp3.MultipartBody
+import okhttp3.RequestBody
 import okhttp3.RequestBody.Companion.asRequestBody
+import okhttp3.RequestBody.Companion.toRequestBody
 import ru.netology.nmedia.Auth.AppAuth
 import ru.netology.nmedia.api.PostsApi
 import ru.netology.nmedia.dao.PostDao
-import ru.netology.nmedia.dto.Attachment
 import ru.netology.nmedia.dto.AttachmentType
 import ru.netology.nmedia.dto.Media
 import ru.netology.nmedia.dto.Post
-import ru.netology.nmedia.dto.Token
 import ru.netology.nmedia.entity.AttachmentEmbeddable
 import ru.netology.nmedia.entity.PostEntity
 import ru.netology.nmedia.entity.toDto
@@ -35,6 +34,42 @@ class PostRepositoryImpl(
 
     override fun switchHidden() {
         dao.getAllInvisible()
+    }
+
+
+    override suspend fun registerWithAvatar(login: String, pass: String, name: String, file: File) {
+        val formData = MultipartBody.Part.createFormData(
+            "file", file.name, file.asRequestBody()
+        )
+
+        val userLogin = login.toRequestBody("text/plain".toMediaType())
+        val password = pass.toRequestBody("text/plain".toMediaType())
+        val userName = pass.toRequestBody("text/plain".toMediaType())
+
+        val response = PostsApi.retrofitService.registerWithPhoto(userLogin, password, userName, formData)
+
+        if(!response.isSuccessful) {
+            throw RuntimeException(response.message())
+        }
+
+        val result = response.body() ?: throw RuntimeException("body is null")
+        AppAuth.getInstance().setAuth(result.id, result.token)
+    }
+
+    override suspend fun setDataForRegistration(login: String, password: String, name: String) {
+        try {
+            val response = PostsApi.retrofitService.registerUser(login, password, name)
+
+            if(!response.isSuccessful) {
+                throw RuntimeException(response.message())
+            }
+
+            val result = response.body() ?: throw RuntimeException("Body is null")
+            AppAuth.getInstance().setAuth(result.id, result.token)
+        }
+        catch (e: Exception) {
+            throw NetworkErrorException()
+        }
     }
 
     override suspend fun setIdAndTokenToAuth(id: String, token: String) {

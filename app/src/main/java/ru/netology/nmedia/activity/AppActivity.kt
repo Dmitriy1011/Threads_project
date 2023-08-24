@@ -10,17 +10,15 @@ import android.view.MenuInflater
 import android.view.MenuItem
 import android.widget.Toast
 import androidx.activity.viewModels
+import androidx.appcompat.app.AlertDialog
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.view.MenuProvider
 import androidx.navigation.findNavController
-import com.bumptech.glide.Glide
-import com.bumptech.glide.load.resource.drawable.DrawableTransitionOptions
 import com.google.android.gms.common.ConnectionResult
 import com.google.android.gms.common.GoogleApiAvailability
 import ru.netology.nmedia.Auth.AppAuth
 import ru.netology.nmedia.R
 import ru.netology.nmedia.activity.NewPostFragment.Companion.textArg
-import ru.netology.nmedia.databinding.ActivityAppBinding
 import ru.netology.nmedia.databinding.CardPostBinding
 import ru.netology.nmedia.viewmodel.AuthViewModel
 
@@ -85,21 +83,34 @@ class AppActivity : AppCompatActivity(R.layout.activity_app) {
                         }
 
                         R.id.signUp -> {
-                            //TODO: Make it in homework
+                            findNavController(R.id.nav_host_fragment)
+                                .navigate(R.id.action_feedFragment_to_registrationFragment)
                             AppAuth.getInstance().setAuth(5, "x-token")
                             true
                         }
 
+
                         R.id.logout -> {
-                            //TODO: Make it in homework
-                            AppAuth.getInstance().clearAuth()
+                            val builder = AlertDialog.Builder(postBinding.root.context)
+                            builder.setMessage(getString(R.string.are_you_sure_want_to_logout))
+                            builder.setCancelable(true)
+                            builder.setNegativeButton("No") { dialogInterface, i ->
+                                builder.setCancelable(true)
+                            }
+                            builder.setPositiveButton("Yes") { dialogInterface, i ->
+                                findNavController(R.id.nav_host_fragment).navigate(
+                                    R.id.action_feedFragment_to_authFragment
+                                )
+                                AppAuth.getInstance().clearAuth()
+                            }
+                            builder.show()
                             true
                         }
 
                         else -> false
                     }
             }.also {
-                   currentMenuProvider = it
+                currentMenuProvider = it
             }, this)
         }
     }

@@ -15,6 +15,7 @@ import androidx.fragment.app.Fragment
 import androidx.fragment.app.activityViewModels
 import androidx.navigation.fragment.findNavController
 import com.google.android.material.snackbar.Snackbar
+import ru.netology.nmedia.Auth.AppAuth
 import ru.netology.nmedia.BuildConfig
 import ru.netology.nmedia.R
 import ru.netology.nmedia.activity.NewPostFragment.Companion.textArg
@@ -73,7 +74,19 @@ class FeedFragment : Fragment() {
             }
 
             override fun onLike(post: Post) {
-                viewModel.likeById(post.id)
+                if(AppAuth.getInstance().state.value != null) {
+                    viewModel.likeById(post.id)
+                } else {
+                    Snackbar.make(
+                        binding.root,
+                        getString(R.string.to_authentication),
+                        Snackbar.LENGTH_LONG
+                    ).setAction(
+                        R.string.sign_in
+                    ) {
+                        findNavController().navigate(R.id.action_feedFragment_to_authFragment)
+                    }.show()
+                }
             }
 
             override fun onUnLike(post: Post) {
@@ -103,7 +116,11 @@ class FeedFragment : Fragment() {
             binding.swipeRefresh.isVisible = !state.refreshing
             binding.errorGroup.isVisible = state.error
             if (state.error) {
-                Snackbar.make(binding.root, R.string.error_loading, Snackbar.LENGTH_LONG)
+                Snackbar.make(
+                    binding.root,
+                    R.string.error_loading,
+                    Snackbar.LENGTH_LONG
+                )
                     .setAction(R.string.retry_loading) {
                         viewModel.loadPosts()
                     }
@@ -129,42 +146,58 @@ class FeedFragment : Fragment() {
         }
 
         binding.fab.setOnClickListener {
-            findNavController().navigate(R.id.action_feedFragment_to_newPostFragment)
+            if (AppAuth.getInstance().state.value != null) {
+                findNavController().navigate(R.id.action_feedFragment_to_newPostFragment)
+            }
+
+            Snackbar.make(
+                binding.root,
+                getString(R.string.to_authentication),
+                Snackbar.LENGTH_LONG
+            ).setAction(
+                R.string.sign_in
+            ) {
+                findNavController().navigate(R.id.action_feedFragment_to_authFragment)
+            }.show()
         }
 
-        binding.swipeRefresh.setOnRefreshListener {
-            binding.swipeRefresh.isRefreshing = false
-            viewModel.refresh()
-        }
-
-        viewModel.postsLoadError.observe(viewLifecycleOwner) {
-            Toast.makeText(requireContext(), viewModel.postsLoadError.value, Toast.LENGTH_LONG)
-                .show()
-        }
-
-        viewModel.savePostError.observe(viewLifecycleOwner) {
-            Toast.makeText(requireContext(), viewModel.savePostError.value, Toast.LENGTH_LONG)
-                .show()
-        }
-
-        viewModel.newerCount.observe(viewLifecycleOwner) {
-            Log.d("FeedFragment", "newer count: $it")
-        }
-
-        viewModel.newerCount.observe(viewLifecycleOwner) {
-            Log.d("FeedFragment", "newer count: $it")
-            val text = "${getString(R.string.new_notes)} ($it)"
-            binding.toNewPostsButton.text = text
-            binding.toNewPostsButton.isVisible = it != 0
-        }
-
-        binding.toNewPostsButton.isVisible = false
-
-        binding.toNewPostsButton.setOnClickListener {
-            binding.toNewPostsButton.isVisible = false
-            viewModel.changeHiddenStatus()
-        }
-
-        return binding.root
+    binding.swipeRefresh.setOnRefreshListener {
+        binding.swipeRefresh.isRefreshing = false
+        viewModel.refresh()
     }
+
+    viewModel.postsLoadError.observe(viewLifecycleOwner)
+    {
+        Toast.makeText(requireContext(), viewModel.postsLoadError.value, Toast.LENGTH_LONG)
+            .show()
+    }
+
+    viewModel.savePostError.observe(viewLifecycleOwner)
+    {
+        Toast.makeText(requireContext(), viewModel.savePostError.value, Toast.LENGTH_LONG)
+            .show()
+    }
+
+    viewModel.newerCount.observe(viewLifecycleOwner)
+    {
+        Log.d("FeedFragment", "newer count: $it")
+    }
+
+    viewModel.newerCount.observe(viewLifecycleOwner)
+    {
+        Log.d("FeedFragment", "newer count: $it")
+        val text = "${getString(R.string.new_notes)} ($it)"
+        binding.toNewPostsButton.text = text
+        binding.toNewPostsButton.isVisible = it != 0
+    }
+
+    binding.toNewPostsButton.isVisible = false
+
+    binding.toNewPostsButton.setOnClickListener {
+        binding.toNewPostsButton.isVisible = false
+        viewModel.changeHiddenStatus()
+    }
+
+    return binding.root
+}
 }
