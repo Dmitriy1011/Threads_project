@@ -9,6 +9,7 @@ import androidx.fragment.app.activityViewModels
 import androidx.navigation.fragment.findNavController
 import ru.netology.nmedia.R
 import ru.netology.nmedia.databinding.FragmentRegistrationBinding
+import ru.netology.nmedia.dto.Media
 import ru.netology.nmedia.viewmodel.RegistrationViewModel
 
 
@@ -26,7 +27,14 @@ class RegistrationFragment : Fragment() {
             val login = binding.nameTextField.editText?.text.toString()
             val pass = binding.regPasswordTextField.editText?.text.toString()
             val name = binding.nameTextField.editText?.text.toString()
-//            viewModel.saveUserWithRegister(login, pass, name, ...) что передавать аргументом?
+
+            viewModel.registerImage.observe(viewLifecycleOwner) { media ->
+                if(media != null) {
+                    viewModel.saveUserWithRegister(login, pass, name, media.file)
+                }
+            }
+
+//            viewModel.saveUserWithRegister(login, pass, name, )
             findNavController().navigate(R.id.action_registrationFragment_to_feedFragment)
         }
 

@@ -19,12 +19,21 @@ import retrofit2.http.PATCH
 import retrofit2.http.POST
 import retrofit2.http.Part
 import retrofit2.http.Path
+import ru.netology.nmedia.Auth.AppAuth
 import ru.netology.nmedia.dto.Media
 import ru.netology.nmedia.dto.Post
 import ru.netology.nmedia.dto.Token
 import java.util.concurrent.TimeUnit
 
 private const val BASE_URL = "http://10.0.2.2:9999/api/slow/"
+
+private val logging = HttpLoggingInterceptor().apply {
+    if (BuildConfig.DEBUG) {
+        level = HttpLoggingInterceptor.Level.BODY
+    }
+}
+
+
 
 private val client = OkHttpClient.Builder()
     .connectTimeout(30, TimeUnit.SECONDS)
@@ -35,6 +44,15 @@ private val client = OkHttpClient.Builder()
             HttpLoggingInterceptor.Level.NONE
         }
     })
+    .addInterceptor { chain ->
+        AppAuth.getInstance().state.value?.token?.let { token ->
+            val newRequest = chain.request().newBuilder()
+                .addHeader("Authorization", token) //Запросы на сервер связанные с изменениями должны быть с таким хедером
+                .build()
+            return@addInterceptor chain.proceed(newRequest)
+        }
+        chain.proceed(chain.request())
+    }
     .build()
 
 
@@ -74,14 +92,14 @@ interface PostApiService {
     suspend fun uploadMedia(@Part file: MultipartBody.Part): Response<Media>
 
     @FormUrlEncoded
-    @POST("user/edit")
+    @POST("users/authentication")
     suspend fun updateUser(
         @Field("login") login: String,
         @Field("pass") pass: String
     ): Response<Token>
 
     @FormUrlEncoded
-    @POST("user/registration")
+    @POST("users/registration")
     suspend fun registerUser(
         @Field("login") login: String,
         @Field("pass") pass: String,
@@ -94,7 +112,7 @@ interface PostApiService {
         @Part("login") login: RequestBody,
         @Part("pass") pass: RequestBody,
         @Part("name") name: RequestBody,
-        @Part("media") media: MultipartBody.Part
+        @Part media: MultipartBody.Part
     ): Response<Token>
 }
 

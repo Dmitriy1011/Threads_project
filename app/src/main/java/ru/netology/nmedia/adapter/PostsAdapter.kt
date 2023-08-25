@@ -21,7 +21,6 @@ interface OnInteractionListener {
     fun onRemove(post: Post) {}
     fun onShare(post: Post) {}
     fun onUnLike(post: Post)
-
     fun onShowImageAsSeparate(post: Post)
 }
 
