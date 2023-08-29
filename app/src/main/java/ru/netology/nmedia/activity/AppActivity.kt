@@ -16,11 +16,12 @@ import androidx.core.view.MenuProvider
 import androidx.navigation.findNavController
 import com.google.android.gms.common.ConnectionResult
 import com.google.android.gms.common.GoogleApiAvailability
+import com.google.firebase.messaging.FirebaseMessaging
 import ru.netology.nmedia.Auth.AppAuth
-import ru.netology.nmedia.R
 import ru.netology.nmedia.activity.NewPostFragment.Companion.textArg
-import ru.netology.nmedia.databinding.CardPostBinding
 import ru.netology.nmedia.viewmodel.AuthViewModel
+import ru.netology.nmedia.R
+import ru.netology.nmedia.databinding.CardPostBinding
 
 class AppActivity : AppCompatActivity(R.layout.activity_app) {
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -65,6 +66,8 @@ class AppActivity : AppCompatActivity(R.layout.activity_app) {
             // подписка, чтобы какждый раз перестраивать меню
             addMenuProvider(object : MenuProvider {
                 override fun onCreateMenu(menu: Menu, menuInflater: MenuInflater) {
+
+                    menu.clear()
                     menuInflater.inflate(R.menu.menu_auth, menu)
 
                     val authenticated = authViewModel.isAuthenticated
@@ -148,9 +151,8 @@ class AppActivity : AppCompatActivity(R.layout.activity_app) {
                 .show()
         }
 
-//        FirebaseMessaging.getInstance().token.addOnSuccessListener {
-//            println(it)
-//        }
-
+        FirebaseMessaging.getInstance().token.addOnSuccessListener {
+            println("token: $it")
+        }
     }
 }

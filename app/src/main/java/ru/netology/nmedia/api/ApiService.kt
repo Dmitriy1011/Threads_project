@@ -22,6 +22,7 @@ import retrofit2.http.Path
 import ru.netology.nmedia.Auth.AppAuth
 import ru.netology.nmedia.dto.Media
 import ru.netology.nmedia.dto.Post
+import ru.netology.nmedia.dto.PushToken
 import ru.netology.nmedia.dto.Token
 import java.util.concurrent.TimeUnit
 
@@ -114,6 +115,9 @@ interface PostApiService {
         @Part("name") name: RequestBody,
         @Part media: MultipartBody.Part
     ): Response<Token>
+
+    @POST("users/push-tokens")
+    suspend fun sendPushToken(@Body body: PushToken) : Response<Unit>
 }
 
 //для лоступа к Api создаём Singleton c lazy инициализцеий поля

@@ -9,10 +9,13 @@ import android.content.pm.PackageManager
 import android.os.Build
 import androidx.core.app.NotificationCompat
 import androidx.core.app.NotificationManagerCompat
+import com.google.android.datatransport.Priority
 import com.google.firebase.messaging.FirebaseMessagingService
 import com.google.firebase.messaging.RemoteMessage
 import com.google.gson.Gson
+import ru.netology.nmedia.Auth.AppAuth
 import ru.netology.nmedia.R
+import ru.netology.nmedia.dto.PushMessage
 import kotlin.random.Random
 
 
@@ -38,6 +41,23 @@ class FCMService : FirebaseMessagingService() {
 
     override fun onMessageReceived(message: RemoteMessage) {
 
+        val pushMessage = gson.fromJson(message.data[action], PushMessage::class.java)
+        val recipientId = pushMessage.recipientId
+        val recipientContent = pushMessage.content
+
+        val notification = NotificationCompat.Builder(this, channelId)
+            .setSmallIcon(R.drawable.ic_notification)
+            .setContentTitle(getString(R.string.auth_notification_title))
+            .setPriority(NotificationCompat.PRIORITY_DEFAULT)
+            .build()
+
+        when {
+            recipientId == AppAuth.getInstance().state.value?.id -> notify(notification)
+            recipientId == 0L && recipientId != AppAuth.getInstance().state.value?.id -> AppAuth.getInstance().sendPushToken()
+            recipientId != 0L && recipientId != AppAuth.getInstance().state.value?.id -> AppAuth.getInstance().sendPushToken()
+            recipientId == null -> notify(notification)
+        }
+
         message.data[action]?.let {
            when (Action.valueOf(it)) {
               Action.LIKE -> handleLike(gson.fromJson(message.data[content], Like::class.java))
@@ -47,6 +67,7 @@ class FCMService : FirebaseMessagingService() {
 
     override fun onNewToken(token: String) {
         println(token)
+        AppAuth.getInstance().sendPushToken(token)
     }
 
     private fun handleLike(content: Like) {

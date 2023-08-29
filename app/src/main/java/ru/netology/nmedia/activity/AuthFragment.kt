@@ -12,8 +12,11 @@ import ru.netology.nmedia.databinding.FragmentAuthBinding
 import ru.netology.nmedia.viewmodel.SignInViewModel
 
 class AuthFragment : Fragment() {
-
+    //только теперь возможно и сервер нормально не сработает и потребуется пересоздать проект на Firebaes. Хорошо
+//а зачем переименовывать то? Я вернул как было. Просто ошибку мне выкинул из за nmedia
     private val viewModel: SignInViewModel by activityViewModels()
+
+    
 
     override fun onCreateView(
         inflater: LayoutInflater,
@@ -32,10 +35,4 @@ class AuthFragment : Fragment() {
 
         return binding.root
     }
-
-//    val inputText = filledTextField.editText?.text.toString()
-//
-//    filledTextField.editText?.doOnTextChanged { inputText, _, _, _ ->
-//        // Respond to input text change
-//    }
 }

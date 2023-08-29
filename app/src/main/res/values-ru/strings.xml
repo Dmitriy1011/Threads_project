@@ -38,4 +38,5 @@
     <string name="sign_up_registration">Sign up</string>
     <string name="are_you_sure_want_to_logout">Are you sure want to logout?</string>
     <string name="logout_dialog">Logout dialog</string>
+    <string name="auth_notification_title">Выполнен вход в аккаунт</string>
 </resources>
