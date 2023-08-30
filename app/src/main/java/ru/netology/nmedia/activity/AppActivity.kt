@@ -54,68 +54,6 @@ class AppActivity : AppCompatActivity(R.layout.activity_app) {
         checkGoogleApiAvailability()
 
         val authViewModel by viewModels<AuthViewModel>()
-
-        var currentMenuProvider: MenuProvider? = null
-
-        authViewModel.data.observe(this) {
-            //в зависимости от появления нового токена,
-            //будет исчезать или появляться новый menuProvider
-
-            currentMenuProvider.let { ::removeMenuProvider }
-
-            // подписка, чтобы какждый раз перестраивать меню
-            addMenuProvider(object : MenuProvider {
-                override fun onCreateMenu(menu: Menu, menuInflater: MenuInflater) {
-
-                    menu.clear()
-                    menuInflater.inflate(R.menu.menu_auth, menu)
-
-                    val authenticated = authViewModel.isAuthenticated
-
-                    menu.setGroupVisible(R.id.authorized, authenticated)
-                    menu.setGroupVisible(R.id.unathorized, !authenticated)
-                }
-
-                override fun onMenuItemSelected(menuItem: MenuItem): Boolean =
-                    when (menuItem.itemId) {
-                        R.id.signIn -> {
-                            findNavController(R.id.nav_host_fragment)
-                                .navigate(R.id.action_feedFragment_to_authFragment)
-                            AppAuth.getInstance().setAuth(5, "x-token")
-                            true
-                        }
-
-                        R.id.signUp -> {
-                            findNavController(R.id.nav_host_fragment)
-                                .navigate(R.id.action_feedFragment_to_registrationFragment)
-                            AppAuth.getInstance().setAuth(5, "x-token")
-                            true
-                        }
-
-
-                        R.id.logout -> {
-                            val builder = AlertDialog.Builder(postBinding.root.context)
-                            builder.setMessage(getString(R.string.are_you_sure_want_to_logout))
-                            builder.setCancelable(true)
-                            builder.setNegativeButton("No") { dialogInterface, i ->
-                                builder.setCancelable(true)
-                            }
-                            builder.setPositiveButton("Yes") { dialogInterface, i ->
-                                findNavController(R.id.nav_host_fragment).navigate(
-                                    R.id.action_feedFragment_to_authFragment
-                                )
-                                AppAuth.getInstance().clearAuth()
-                            }
-                            builder.show()
-                            true
-                        }
-
-                        else -> false
-                    }
-            }.also {
-                currentMenuProvider = it
-            }, this)
-        }
     }
 
 

@@ -7,6 +7,7 @@ import android.app.NotificationManager
 import android.content.Context
 import android.content.pm.PackageManager
 import android.os.Build
+import android.util.Log
 import androidx.core.app.NotificationCompat
 import androidx.core.app.NotificationManagerCompat
 import com.google.android.datatransport.Priority
@@ -41,7 +42,7 @@ class FCMService : FirebaseMessagingService() {
 
     override fun onMessageReceived(message: RemoteMessage) {
 
-        val pushMessage = gson.fromJson(message.data[action], PushMessage::class.java)
+        val pushMessage = gson.fromJson(message.data["content"], PushMessage::class.java)
         val recipientId = pushMessage.recipientId
         val recipientContent = pushMessage.content
 
@@ -67,6 +68,9 @@ class FCMService : FirebaseMessagingService() {
 
     override fun onNewToken(token: String) {
         println(token)
+        Log.e("PUSH_TOKEN", token)
+        //Тольок я эмулятор не вижу? Черный экран сейчас
+        //Что-то с ним не так было, размер слишком маленький был
         AppAuth.getInstance().sendPushToken(token)
     }
 
