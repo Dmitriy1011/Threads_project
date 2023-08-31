@@ -1,6 +1,7 @@
 package ru.netology.nmedia.repository
 
 import android.accounts.NetworkErrorException
+import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.first
@@ -8,11 +9,10 @@ import kotlinx.coroutines.flow.flow
 import kotlinx.coroutines.flow.map
 import okhttp3.MediaType.Companion.toMediaType
 import okhttp3.MultipartBody
-import okhttp3.RequestBody
 import okhttp3.RequestBody.Companion.asRequestBody
 import okhttp3.RequestBody.Companion.toRequestBody
 import ru.netology.nmedia.Auth.AppAuth
-import ru.netology.nmedia.api.PostsApi
+import ru.netology.nmedia.api.PostApiService
 import ru.netology.nmedia.dao.PostDao
 import ru.netology.nmedia.dto.AttachmentType
 import ru.netology.nmedia.dto.Media
@@ -24,11 +24,16 @@ import ru.netology.nmedia.entity.toEntity
 import java.io.File
 import java.io.IOException
 import java.util.concurrent.CancellationException
+import javax.inject.Inject
 
-
-class PostRepositoryImpl(
-    private val dao: PostDao //база для LiveData - dao - data access object //dto - data transfer object
+@AndroidEntryPoint
+class PostRepositoryImpl @Inject constructor(
+    private val dao: PostDao, //база для LiveData - dao - data access object //dto - data transfer object
+    private val apiService: PostApiService
 ) : PostRepository {
+
+    @Inject
+    lateinit var appAuth: AppAuth
 
     override val data: Flow<List<Post>> = dao.getAllVisible().map(List<PostEntity>::toDto)
 
@@ -46,26 +51,26 @@ class PostRepositoryImpl(
         val password = pass.toRequestBody("text/plain".toMediaType())
         val userName = pass.toRequestBody("text/plain".toMediaType())
 
-        val response = PostsApi.retrofitService.registerWithPhoto(userLogin, password, userName, formData)
+        val response = apiService.registerWithPhoto(userLogin, password, userName, formData)
 
         if(!response.isSuccessful) {
             throw RuntimeException(response.message())
         }
 
         val result = response.body() ?: throw RuntimeException("body is null")
-        AppAuth.getInstance().setAuth(result.id, result.token)
+        appAuth.setAuth(result.id, result.token)
     }
 
     override suspend fun setDataForRegistration(login: String, password: String, name: String) {
         try {
-            val response = PostsApi.retrofitService.registerUser(login, password, name)
+            val response = apiService.registerUser(login, password, name)
 
             if(!response.isSuccessful) {
                 throw RuntimeException(response.message())
             }
 
             val result = response.body() ?: throw RuntimeException("Body is null")
-            AppAuth.getInstance().setAuth(result.id, result.token)
+            appAuth.setAuth(result.id, result.token)
         }
         catch (e: Exception) {
             throw NetworkErrorException()
@@ -74,14 +79,14 @@ class PostRepositoryImpl(
 
     override suspend fun setIdAndTokenToAuth(id: String, token: String) {
         try {
-            val response = PostsApi.retrofitService.updateUser(id, token)
+            val response = apiService.updateUser(id, token)
 
             if (!response.isSuccessful) {
                 throw RuntimeException(response.message())
             }
 
             val result = response.body() ?: throw RuntimeException("body is null")
-            AppAuth.getInstance().setAuth(result.id, result.token)
+            appAuth.setAuth(result.id, result.token)
         }
         catch (e: IOException) {
             throw NetworkErrorException()
@@ -93,7 +98,7 @@ class PostRepositoryImpl(
 
             val media = uploadMedia(file)
 
-            val response = PostsApi.retrofitService.savePost(
+            val response = apiService.savePost(
                 post.copy(
                     attachment = AttachmentEmbeddable(
                         url = media.id,
@@ -120,7 +125,7 @@ class PostRepositoryImpl(
             "file", file.name, file.asRequestBody()
         )
 
-        val response = PostsApi.retrofitService.uploadMedia(formData)
+        val response = apiService.uploadMedia(formData)
 
         if (!response.isSuccessful) {
             throw RuntimeException(response.message())
@@ -136,7 +141,7 @@ class PostRepositoryImpl(
 
                 val postId = dao.getLatest().first().firstOrNull()?.id ?: 0
 
-                val response = PostsApi.retrofitService.getNewer(postId)
+                val response = apiService.getNewer(postId)
 
                 val posts = response.body().orEmpty()
 
@@ -153,7 +158,7 @@ class PostRepositoryImpl(
 
     override suspend fun getAll() {
         try {
-            val response = PostsApi.retrofitService.getPosts()
+            val response = apiService.getPosts()
 
             if (!response.isSuccessful) {
                 throw RuntimeException(response.message()) //выброс ошибки означает завершение выполнения кода
@@ -171,7 +176,7 @@ class PostRepositoryImpl(
         try {
             dao.likeById(id)
 
-            val response = PostsApi.retrofitService.likeById(id)
+            val response = apiService.likeById(id)
 
             if (!response.isSuccessful) {
                 throw RuntimeException(response.message())
@@ -188,7 +193,7 @@ class PostRepositoryImpl(
         try {
             dao.likeById(id)
 
-            val response = PostsApi.retrofitService.unlikeById(id)
+            val response = apiService.unlikeById(id)
 
             if (!response.isSuccessful) {
                 throw RuntimeException(response.message())
@@ -202,7 +207,7 @@ class PostRepositoryImpl(
 
     override suspend fun edit(post: Post) {
         try {
-            val response = PostsApi.retrofitService.editPost(post)
+            val response = apiService.editPost(post)
 
             if (!response.isSuccessful) {
                 throw RuntimeException(response.message())
@@ -219,7 +224,7 @@ class PostRepositoryImpl(
 
     override suspend fun save(post: Post) {
         try {
-            val response = PostsApi.retrofitService.savePost(post)
+            val response = apiService.savePost(post)
 
             if (!response.isSuccessful) {
                 throw RuntimeException(response.message())
@@ -236,7 +241,7 @@ class PostRepositoryImpl(
 
     override suspend fun removeById(id: Long) {
         try {
-            val response = PostsApi.retrofitService.deletePost(id)
+            val response = apiService.deletePost(id)
 
             if (!response.isSuccessful) {
                 throw RuntimeException(response.message())

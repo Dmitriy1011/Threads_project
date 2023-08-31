@@ -10,21 +10,26 @@ import android.os.Build
 import android.util.Log
 import androidx.core.app.NotificationCompat
 import androidx.core.app.NotificationManagerCompat
-import com.google.android.datatransport.Priority
 import com.google.firebase.messaging.FirebaseMessagingService
 import com.google.firebase.messaging.RemoteMessage
 import com.google.gson.Gson
+import dagger.hilt.android.AndroidEntryPoint
 import ru.netology.nmedia.Auth.AppAuth
 import ru.netology.nmedia.R
 import ru.netology.nmedia.dto.PushMessage
+import javax.inject.Inject
 import kotlin.random.Random
 
 
+@AndroidEntryPoint
 class FCMService : FirebaseMessagingService() {
     private val action = "action"
     private val content = "content"
     private val channelId = "remote"
     private val gson = Gson()
+
+    @Inject
+    lateinit var appAuth: AppAuth
 
     override fun onCreate() {
         super.onCreate()
@@ -53,9 +58,9 @@ class FCMService : FirebaseMessagingService() {
             .build()
 
         when {
-            recipientId == AppAuth.getInstance().state.value?.id -> notify(notification)
-            recipientId == 0L && recipientId != AppAuth.getInstance().state.value?.id -> AppAuth.getInstance().sendPushToken()
-            recipientId != 0L && recipientId != AppAuth.getInstance().state.value?.id -> AppAuth.getInstance().sendPushToken()
+            recipientId == appAuth.state.value?.id -> notify(notification)
+            recipientId == 0L && recipientId != appAuth.state.value?.id -> appAuth.sendPushToken()
+            recipientId != 0L && recipientId != appAuth.state.value?.id -> appAuth.sendPushToken()
             recipientId == null -> notify(notification)
         }
 
@@ -71,7 +76,7 @@ class FCMService : FirebaseMessagingService() {
         Log.e("PUSH_TOKEN", token)
         //Тольок я эмулятор не вижу? Черный экран сейчас
         //Что-то с ним не так было, размер слишком маленький был
-        AppAuth.getInstance().sendPushToken(token)
+        appAuth.sendPushToken(token)
     }
 
     private fun handleLike(content: Like) {

@@ -3,16 +3,19 @@ package ru.netology.nmedia.viewmodel
 import android.app.Application
 import androidx.lifecycle.AndroidViewModel
 import androidx.lifecycle.viewModelScope
+import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.launch
-import ru.netology.nmedia.db.AppDb
 import ru.netology.nmedia.repository.PostRepository
 import ru.netology.nmedia.repository.PostRepositoryImpl
+import javax.inject.Inject
 
-
+@HiltViewModel
 //viewModel для авторизации
-class SignInViewModel(
+class SignInViewModel @Inject constructor(
     private val application: Application
 ) : AndroidViewModel(application) {
+
+
         private val repository: PostRepository = PostRepositoryImpl(
             AppDb.getInstance(application).postDao()
         )

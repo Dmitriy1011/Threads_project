@@ -1,18 +1,14 @@
 package ru.netology.nmedia.activity
 
 import android.Manifest
+import android.content.Context
 import android.content.Intent
 import android.content.pm.PackageManager
 import android.os.Build
 import android.os.Bundle
-import android.view.Menu
-import android.view.MenuInflater
-import android.view.MenuItem
 import android.widget.Toast
 import androidx.activity.viewModels
-import androidx.appcompat.app.AlertDialog
 import androidx.appcompat.app.AppCompatActivity
-import androidx.core.view.MenuProvider
 import androidx.navigation.findNavController
 import com.google.android.gms.common.ConnectionResult
 import com.google.android.gms.common.GoogleApiAvailability
@@ -22,8 +18,23 @@ import ru.netology.nmedia.activity.NewPostFragment.Companion.textArg
 import ru.netology.nmedia.viewmodel.AuthViewModel
 import ru.netology.nmedia.R
 import ru.netology.nmedia.databinding.CardPostBinding
+import javax.inject.Inject
 
-class AppActivity : AppCompatActivity(R.layout.activity_app) {
+class AppActivity(
+    private val context: Context
+) : AppCompatActivity(R.layout.activity_app) {
+
+    @Inject
+    lateinit var appAuth: AppAuth //говорим, что этот объект появится не при создании Activity, а чуть позднее
+
+    @Inject
+    lateinit var googleApiAvailability: GoogleApiAvailability
+
+    @Inject
+    lateinit var firebaseMessaging: FirebaseMessaging
+
+    private val viewModel: AuthViewModel by viewModels()
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
 
@@ -71,8 +82,8 @@ class AppActivity : AppCompatActivity(R.layout.activity_app) {
         requestPermissions(arrayOf(permission), 1)
     }
 
-    private fun checkGoogleApiAvailability() {
-        with(GoogleApiAvailability.getInstance()) {
+    private fun checkGoogleApiAvailability() =
+        with(googleApiAvailability) {
             val code = isGooglePlayServicesAvailable(this@AppActivity)
             if (code == ConnectionResult.SUCCESS) {
                 return@with
@@ -87,9 +98,8 @@ class AppActivity : AppCompatActivity(R.layout.activity_app) {
                 Toast.LENGTH_LONG
             )
                 .show()
-        }
 
-        FirebaseMessaging.getInstance().token.addOnSuccessListener {
+        firebaseMessaging.token.addOnSuccessListener {
             println("token: $it")
         }
     }

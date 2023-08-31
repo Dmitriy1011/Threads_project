@@ -34,7 +34,6 @@ class RegistrationFragment : Fragment() {
                 }
             }
 
-//            viewModel.saveUserWithRegister(login, pass, name, )
             findNavController().navigate(R.id.action_registrationFragment_to_feedFragment)
         }
 

@@ -12,9 +12,10 @@ import androidx.activity.result.contract.ActivityResultContracts
 import androidx.core.net.toFile
 import androidx.core.view.isVisible
 import androidx.fragment.app.Fragment
-import androidx.fragment.app.activityViewModels
+import androidx.fragment.app.viewModels
 import androidx.navigation.fragment.findNavController
 import com.google.android.material.snackbar.Snackbar
+import dagger.hilt.android.AndroidEntryPoint
 import ru.netology.nmedia.Auth.AppAuth
 import ru.netology.nmedia.BuildConfig
 import ru.netology.nmedia.R
@@ -25,10 +26,15 @@ import ru.netology.nmedia.databinding.FragmentFeedBinding
 import ru.netology.nmedia.dto.Post
 import ru.netology.nmedia.model.PhotoModel
 import ru.netology.nmedia.viewmodel.PostViewModel
+import javax.inject.Inject
 
-class FeedFragment : Fragment() {
+@AndroidEntryPoint
+class FeedFragment() : Fragment() {
 
-    private val viewModel: PostViewModel by activityViewModels()
+    @Inject
+    lateinit var appAuth: AppAuth
+
+    private val viewModel: PostViewModel by viewModels()
 
     private val photoLauncher =
         registerForActivityResult(ActivityResultContracts.StartActivityForResult()) {
@@ -74,7 +80,7 @@ class FeedFragment : Fragment() {
             }
 
             override fun onLike(post: Post) {
-                if(AppAuth.getInstance().state.value != null) {
+                if(appAuth.state.value != null) {
                     viewModel.likeById(post.id)
                 } else {
                     Snackbar.make(
@@ -146,7 +152,7 @@ class FeedFragment : Fragment() {
         }
 
         binding.fab.setOnClickListener {
-            if (AppAuth.getInstance().state.value != null) {
+            if (appAuth.state.value != null) {
                 findNavController().navigate(R.id.action_feedFragment_to_newPostFragment)
             }
 
