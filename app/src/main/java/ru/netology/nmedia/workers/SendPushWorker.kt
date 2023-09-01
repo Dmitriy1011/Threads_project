@@ -6,12 +6,13 @@ import androidx.work.WorkerParameters
 import com.google.firebase.ktx.Firebase
 import com.google.firebase.messaging.ktx.messaging
 import kotlinx.coroutines.tasks.await
-import ru.netology.nmedia.api.PostsApi
+import ru.netology.nmedia.api.PostApiService
 import ru.netology.nmedia.dto.PushToken
 
 class SendPushWorker(
     context: Context,
-    params: WorkerParameters
+    params: WorkerParameters,
+    private val apiService: PostApiService
 ) : CoroutineWorker(
     context,
     params
@@ -28,7 +29,7 @@ class SendPushWorker(
         val tokenDto = PushToken(token ?: Firebase.messaging.token.await())
 
         return runCatching {
-            PostsApi.retrofitService.sendPushToken(tokenDto)
+            apiService.sendPushToken(tokenDto)
         }
             .map {
                 Result.success()

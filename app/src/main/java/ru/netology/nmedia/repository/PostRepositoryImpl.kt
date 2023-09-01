@@ -26,7 +26,6 @@ import java.io.IOException
 import java.util.concurrent.CancellationException
 import javax.inject.Inject
 
-@AndroidEntryPoint
 class PostRepositoryImpl @Inject constructor(
     private val dao: PostDao, //база для LiveData - dao - data access object //dto - data transfer object
     private val apiService: PostApiService
