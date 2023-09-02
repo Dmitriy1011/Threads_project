@@ -58,9 +58,9 @@ class FCMService : FirebaseMessagingService() {
             .build()
 
         when {
-            recipientId == appAuth.state.value?.id -> notify(notification)
-            recipientId == 0L && recipientId != appAuth.state.value?.id -> appAuth.sendPushToken()
-            recipientId != 0L && recipientId != appAuth.state.value?.id -> appAuth.sendPushToken()
+            recipientId == appAuth.authStateFlow.value?.id -> notify(notification)
+            recipientId == 0L && recipientId != appAuth.authStateFlow.value?.id -> appAuth.sendPushToken()
+            recipientId != 0L && recipientId != appAuth.authStateFlow.value?.id -> appAuth.sendPushToken()
             recipientId == null -> notify(notification)
         }
 

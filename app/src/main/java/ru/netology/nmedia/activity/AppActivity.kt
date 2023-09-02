@@ -1,28 +1,25 @@
 package ru.netology.nmedia.activity
 
 import android.Manifest
-import android.content.Context
 import android.content.Intent
 import android.content.pm.PackageManager
 import android.os.Build
 import android.os.Bundle
 import android.widget.Toast
-import androidx.activity.viewModels
 import androidx.appcompat.app.AppCompatActivity
 import androidx.navigation.findNavController
 import com.google.android.gms.common.ConnectionResult
 import com.google.android.gms.common.GoogleApiAvailability
 import com.google.firebase.messaging.FirebaseMessaging
+import dagger.hilt.android.AndroidEntryPoint
 import ru.netology.nmedia.Auth.AppAuth
-import ru.netology.nmedia.activity.NewPostFragment.Companion.textArg
-import ru.netology.nmedia.viewmodel.AuthViewModel
 import ru.netology.nmedia.R
-import ru.netology.nmedia.databinding.CardPostBinding
+import ru.netology.nmedia.activity.NewPostFragment.Companion.textArg
 import javax.inject.Inject
 
-class AppActivity(
-    private val context: Context
-) : AppCompatActivity(R.layout.activity_app) {
+
+@AndroidEntryPoint
+class AppActivity : AppCompatActivity(R.layout.activity_app) {
 
     @Inject
     lateinit var appAuth: AppAuth //говорим, что этот объект появится не при создании Activity, а чуть позднее
@@ -33,12 +30,8 @@ class AppActivity(
     @Inject
     lateinit var firebaseMessaging: FirebaseMessaging
 
-    private val viewModel: AuthViewModel by viewModels()
-
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-
-        val postBinding = CardPostBinding.inflate(layoutInflater)
 
         requestNotificationsPermission()
 
@@ -63,8 +56,6 @@ class AppActivity(
         }
 
         checkGoogleApiAvailability()
-
-        val authViewModel by viewModels<AuthViewModel>()
     }
 
 
@@ -99,8 +90,8 @@ class AppActivity(
             )
                 .show()
 
-        firebaseMessaging.token.addOnSuccessListener {
-            println("token: $it")
+            firebaseMessaging.token.addOnSuccessListener {
+                println("token: $it")
+            }
         }
-    }
 }

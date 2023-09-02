@@ -10,6 +10,7 @@ import androidx.work.OneTimeWorkRequestBuilder
 import androidx.work.WorkManager
 import dagger.hilt.android.qualifiers.ApplicationContext
 import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import ru.netology.nmedia.dto.Token
 import ru.netology.nmedia.workers.SendPushWorker
@@ -23,35 +24,38 @@ class AppAuth @Inject constructor(
 {
 
     private val prefs = context.getSharedPreferences("auth", Context.MODE_PRIVATE)
-    private val _state = MutableStateFlow<Token?>(null)
-    val state = _state.asStateFlow()
-
     private val idKey = "ID_KEY"
     private val tokenKey = "TOKEN_KEY"
 
+    private val _authStateFlow: MutableStateFlow<AuthState>
 
     //    Основной конструктор не может содержать в себе исполняемого кода. Инициализирующий код может быть помещён в соответствующие блоки (initializers blocks), которые помечаются словом init.
     init {
         val token = prefs.getString(tokenKey, null)
         val id = prefs.getLong(idKey, 0)
 
-        if (!prefs.contains(idKey) || token == null) {
-            prefs.edit { clear() }
-        } else {
-            _state.value = Token(id, token)
-        }
-
-        sendPushToken()
+       if(id == 0L || token != null) {
+           _authStateFlow = MutableStateFlow(AuthState())
+           with(prefs.edit()) {
+               clear()
+               apply()
+           }
+       } else {
+           _authStateFlow = MutableStateFlow(AuthState(id, token))
+       }
     }
+
+    val authStateFlow: StateFlow<AuthState> = _authStateFlow.asStateFlow()
 
     @Synchronized
     fun setAuth(id: Long, token: String) {
-        prefs.edit {
-            putString(tokenKey, token)
+        _authStateFlow.value = AuthState(id, token)
+        with(prefs.edit()) {
             putLong(idKey, id)
+            putString(tokenKey, token)
+            apply()
         }
-
-        _state.value = Token(id, token)
+        sendPushToken()
     }
 
 
@@ -75,10 +79,11 @@ class AppAuth @Inject constructor(
     }
 
     @Synchronized
-    fun clearAuth() {
+    fun removeAuth() {
+        _authStateFlow.value = AuthState()
         with(prefs.edit()) {
-            prefs.edit { clear() }
-            _state.value = null
+            clear()
+            apply()
         }
         sendPushToken()
     }

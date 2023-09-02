@@ -5,7 +5,6 @@ import androidx.lifecycle.asLiveData
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.Dispatchers
 import ru.netology.nmedia.Auth.AppAuth
-import ru.netology.nmedia.repository.PostRepository
 import javax.inject.Inject
 
 //эта viewModel отслеживает состояние пользователя
@@ -13,7 +12,7 @@ import javax.inject.Inject
 class AuthViewModel @Inject constructor(
     private val appAuth: AppAuth,
 ) : ViewModel() {
-    val data = appAuth.state.asLiveData(Dispatchers.Default)
+    val data = appAuth.authStateFlow.asLiveData(Dispatchers.Default)
     val isAuthenticated: Boolean
-        get() = data.value?.token != null
+        get() = appAuth.authStateFlow.value.id != 0L
 }

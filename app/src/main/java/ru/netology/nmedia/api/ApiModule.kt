@@ -41,7 +41,7 @@ class ApiModule {
             }
         })
         .addInterceptor { chain ->
-            appAuth.state.value?.token?.let { token ->
+            appAuth.authStateFlow.value?.token?.let { token ->
                 val newRequest = chain.request().newBuilder()
                     .addHeader(
                         "Authorization",

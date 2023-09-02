@@ -13,9 +13,14 @@ import androidx.core.net.toFile
 import androidx.core.view.isVisible
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.viewModels
+import androidx.lifecycle.lifecycleScope
 import androidx.navigation.fragment.findNavController
+import androidx.paging.LoadState
+import androidx.paging.map
 import com.google.android.material.snackbar.Snackbar
 import dagger.hilt.android.AndroidEntryPoint
+import kotlinx.coroutines.flow.collect
+import kotlinx.coroutines.flow.collectLatest
 import ru.netology.nmedia.Auth.AppAuth
 import ru.netology.nmedia.BuildConfig
 import ru.netology.nmedia.R
@@ -80,7 +85,7 @@ class FeedFragment() : Fragment() {
             }
 
             override fun onLike(post: Post) {
-                if(appAuth.state.value != null) {
+                if(appAuth.authStateFlow.value != null) {
                     viewModel.likeById(post.id)
                 } else {
                     Snackbar.make(
@@ -134,25 +139,46 @@ class FeedFragment() : Fragment() {
             }
         }
 
-        viewModel.data.observe(viewLifecycleOwner) {
-            binding.emptyText.isVisible = it.empty //видимость, если есть флаг empty
-            val newPost =
-                it.posts.size > adapter.itemCount //проверка на действие добавления поста, а не другое действие
-            Log.d("posts size: ", it.posts.size.toString())
-            Log.d("adapter itemCount: ", adapter.itemCount.toString())
-            adapter.submitList(it.posts) {
-                if (newPost) {
-                    binding.list.smoothScrollToPosition(0)
-                }
+//        lifecycleScope.launchWhenCreated {
+//            viewModel.data.collectLatest {
+//                val newPost =
+//                    it.posts.size > adapter.itemCount //проверка на действие добавления поста, а не другое действие
+//                Log.d("posts size: ", it.posts.size.toString())
+//                Log.d("adapter itemCount: ", adapter.itemCount.toString())
+//                adapter.submitData(it.posts) {
+//                    if (newPost) {
+//                        binding.list.smoothScrollToPosition(0)
+//                    }
+//                }
+//            }
+//        }
+
+        lifecycleScope.launchWhenCreated {
+            adapter.loadStateFlow.collectLatest {
+                it.refresh is LoadState.Loading
+                        || it.append is LoadState.Loading
+                        || it.prepend is LoadState.Loading
             }
         }
+
+//        viewModel.data.observe(viewLifecycleOwner) {
+//            val newPost =
+//                it.posts.size > adapter.itemCount //проверка на действие добавления поста, а не другое действие
+//            Log.d("posts size: ", it.posts.size.toString())
+//            Log.d("adapter itemCount: ", adapter.itemCount.toString())
+//            adapter.submitList(it.posts) {
+//                if (newPost) {
+//                    binding.list.smoothScrollToPosition(0)
+//                }
+//            }
+//        }
 
         binding.retryButton.setOnClickListener {
             viewModel.loadPosts()
         }
 
         binding.fab.setOnClickListener {
-            if (appAuth.state.value != null) {
+            if (appAuth.authStateFlow.value != null) {
                 findNavController().navigate(R.id.action_feedFragment_to_newPostFragment)
             }
 
@@ -168,8 +194,8 @@ class FeedFragment() : Fragment() {
         }
 
     binding.swipeRefresh.setOnRefreshListener {
-        binding.swipeRefresh.isRefreshing = false
-        viewModel.refresh()
+//        binding.swipeRefresh.isRefreshing = false
+        adapter.refresh()
     }
 
     viewModel.postsLoadError.observe(viewLifecycleOwner)
@@ -184,18 +210,18 @@ class FeedFragment() : Fragment() {
             .show()
     }
 
-    viewModel.newerCount.observe(viewLifecycleOwner)
-    {
-        Log.d("FeedFragment", "newer count: $it")
-    }
-
-    viewModel.newerCount.observe(viewLifecycleOwner)
-    {
-        Log.d("FeedFragment", "newer count: $it")
-        val text = "${getString(R.string.new_notes)} ($it)"
-        binding.toNewPostsButton.text = text
-        binding.toNewPostsButton.isVisible = it != 0
-    }
+//    viewModel.newerCount.observe(viewLifecycleOwner)
+//    {
+//        Log.d("FeedFragment", "newer count: $it")
+//    }
+//
+//    viewModel.newerCount.observe(viewLifecycleOwner)
+//    {
+//        Log.d("FeedFragment", "newer count: $it")
+//        val text = "${getString(R.string.new_notes)} ($it)"
+//        binding.toNewPostsButton.text = text
+//        binding.toNewPostsButton.isVisible = it != 0
+//    }
 
     binding.toNewPostsButton.isVisible = false
 

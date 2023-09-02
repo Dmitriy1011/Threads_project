@@ -1,6 +1,8 @@
 package ru.netology.nmedia.repository
 
 import android.accounts.NetworkErrorException
+import androidx.paging.Pager
+import androidx.paging.PagingConfig
 import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.Flow
@@ -34,7 +36,16 @@ class PostRepositoryImpl @Inject constructor(
     @Inject
     lateinit var appAuth: AppAuth
 
-    override val data: Flow<List<Post>> = dao.getAllVisible().map(List<PostEntity>::toDto)
+//    override val data: Flow<List<Post>> = dao.getAllVisible().map(List<PostEntity>::toDto)
+
+    override val data = Pager(
+        config = PagingConfig(pageSize = 10, enablePlaceholders = false),
+        pagingSourceFactory = {
+            PostPagingSource(
+                apiService
+            )
+        }
+    ).flow
 
     override fun switchHidden() {
         dao.getAllInvisible()
