@@ -161,6 +161,13 @@ class FeedFragment() : Fragment() {
             }
         }
 
+        lifecycleScope.launchWhenCreated {
+            viewModel.data.collectLatest {
+                adapter.submitData(it)
+            }
+        }
+
+
 //        viewModel.data.observe(viewLifecycleOwner) {
 //            val newPost =
 //                it.posts.size > adapter.itemCount //проверка на действие добавления поста, а не другое действие
