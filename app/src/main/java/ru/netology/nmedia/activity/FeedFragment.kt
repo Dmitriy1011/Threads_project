@@ -139,19 +139,19 @@ class FeedFragment() : Fragment() {
             }
         }
 
-//        lifecycleScope.launchWhenCreated {
-//            viewModel.data.collectLatest {
-//                val newPost =
-//                    it.posts.size > adapter.itemCount //проверка на действие добавления поста, а не другое действие
-//                Log.d("posts size: ", it.posts.size.toString())
-//                Log.d("adapter itemCount: ", adapter.itemCount.toString())
-//                adapter.submitData(it.posts) {
-//                    if (newPost) {
-//                        binding.list.smoothScrollToPosition(0)
-//                    }
-//                }
-//            }
-//        }
+        lifecycleScope.launchWhenCreated {
+            viewModel.data.collectLatest {
+                val newPost =
+                    it.posts.size > adapter.itemCount //проверка на действие добавления поста, а не другое действие
+                Log.d("posts size: ", it.posts.size.toString())
+                Log.d("adapter itemCount: ", adapter.itemCount.toString())
+                adapter.submitData(it.posts) {
+                    if (newPost) {
+                        binding.list.smoothScrollToPosition(0)
+                    }
+                }
+            }
+        }
 
         lifecycleScope.launchWhenCreated {
             adapter.loadStateFlow.collectLatest {
