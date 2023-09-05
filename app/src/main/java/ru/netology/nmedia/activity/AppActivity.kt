@@ -5,16 +5,25 @@ import android.content.Intent
 import android.content.pm.PackageManager
 import android.os.Build
 import android.os.Bundle
+import android.view.Menu
+import android.view.MenuInflater
+import android.view.MenuItem
 import android.widget.Toast
+import androidx.activity.viewModels
 import androidx.appcompat.app.AppCompatActivity
+import androidx.core.view.MenuProvider
+import androidx.lifecycle.lifecycleScope
 import androidx.navigation.findNavController
 import com.google.android.gms.common.ConnectionResult
 import com.google.android.gms.common.GoogleApiAvailability
 import com.google.firebase.messaging.FirebaseMessaging
 import dagger.hilt.android.AndroidEntryPoint
+import kotlinx.coroutines.flow.collectLatest
 import ru.netology.nmedia.Auth.AppAuth
 import ru.netology.nmedia.R
 import ru.netology.nmedia.activity.NewPostFragment.Companion.textArg
+import ru.netology.nmedia.viewmodel.AuthViewModel
+import ru.netology.nmedia.viewmodel.PostViewModel
 import javax.inject.Inject
 
 
@@ -56,6 +65,46 @@ class AppActivity : AppCompatActivity(R.layout.activity_app) {
         }
 
         checkGoogleApiAvailability()
+
+        val authViewModel by viewModels<AuthViewModel>()
+
+        val currentMenuProvider: MenuProvider? = null
+
+        authViewModel.data.observe(this) {
+            currentMenuProvider?.let { ::removeMenuProvider }
+            addMenuProvider(object : MenuProvider {
+                override fun onCreateMenu(menu: Menu, menuInflater: MenuInflater) {
+                    menuInflater.inflate(R.menu.menu_auth, menu)
+
+                    val authenticated = authViewModel.isAuthenticated
+
+                    menu.let {
+                        it.setGroupVisible(R.id.authorized, authenticated)
+                        it.setGroupVisible(R.id.unathorized, !authenticated)
+                    }
+                }
+
+                override fun onMenuItemSelected(menuItem: MenuItem): Boolean =
+                    when (menuItem.itemId) {
+                        R.id.signUp -> {
+                            appAuth.setAuth(5, "x-token")
+                            true
+                        }
+
+                        R.id.signIn -> {
+                            appAuth.setAuth(5, "x-token")
+                            true
+                        }
+
+                        R.id.logout -> {
+                            appAuth.removeAuth()
+                            true
+                        }
+
+                        else -> false
+                    }
+            }, this)
+        }
     }
 
 

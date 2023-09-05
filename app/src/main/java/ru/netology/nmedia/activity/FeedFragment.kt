@@ -155,7 +155,7 @@ class FeedFragment() : Fragment() {
 
         lifecycleScope.launchWhenCreated {
             adapter.loadStateFlow.collectLatest {
-                it.refresh is LoadState.Loading
+                binding.swipeRefresh.isRefreshing = it.refresh is LoadState.Loading
                         || it.append is LoadState.Loading
                         || it.prepend is LoadState.Loading
             }
@@ -167,6 +167,11 @@ class FeedFragment() : Fragment() {
             }
         }
 
+        lifecycleScope.launchWhenCreated {
+            if(appAuth.authStateFlow.value.id != 0L && appAuth.authStateFlow.value.token != null) {
+                adapter.refresh()
+            }
+         }
 
 //        viewModel.data.observe(viewLifecycleOwner) {
 //            val newPost =
@@ -201,7 +206,6 @@ class FeedFragment() : Fragment() {
         }
 
     binding.swipeRefresh.setOnRefreshListener {
-//        binding.swipeRefresh.isRefreshing = false
         adapter.refresh()
     }
 
