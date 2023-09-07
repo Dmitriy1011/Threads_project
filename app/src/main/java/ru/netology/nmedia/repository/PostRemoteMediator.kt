@@ -72,7 +72,6 @@ class PostRemoteMediator(
                 //для этого необходимо узнать, какой был тип входных данных loadType
                 //в зависимости от этого произвести запись в таблицу ключей
                 when (loadType) {
-                    //в случае REFRESH очищаем таблицу с постами и записываем туда оба ключа
                     LoadType.REFRESH -> {
                         if (postRemoteKeyDao.isEmpty()) {
                             postRemoteKeyDao.insert(

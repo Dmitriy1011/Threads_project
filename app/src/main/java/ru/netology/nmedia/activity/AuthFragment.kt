@@ -16,8 +16,6 @@ class AuthFragment : Fragment() {
 //а зачем переименовывать то? Я вернул как было. Просто ошибку мне выкинул из за nmedia
     private val viewModel: SignInViewModel by activityViewModels()
 
-    
-
     override fun onCreateView(
         inflater: LayoutInflater,
         container: ViewGroup?,

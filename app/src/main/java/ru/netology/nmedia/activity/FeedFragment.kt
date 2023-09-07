@@ -13,19 +13,24 @@ import androidx.core.net.toFile
 import androidx.core.view.isVisible
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.viewModels
+import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.lifecycleScope
+import androidx.lifecycle.repeatOnLifecycle
 import androidx.navigation.fragment.findNavController
 import androidx.paging.LoadState
+import androidx.paging.LoadStateAdapter
 import androidx.paging.map
 import com.google.android.material.snackbar.Snackbar
 import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.flow.collect
 import kotlinx.coroutines.flow.collectLatest
+import kotlinx.coroutines.launch
 import ru.netology.nmedia.Auth.AppAuth
 import ru.netology.nmedia.BuildConfig
 import ru.netology.nmedia.R
 import ru.netology.nmedia.activity.NewPostFragment.Companion.textArg
 import ru.netology.nmedia.adapter.OnInteractionListener
+import ru.netology.nmedia.adapter.PostLoadingStateAdapter
 import ru.netology.nmedia.adapter.PostsAdapter
 import ru.netology.nmedia.databinding.FragmentFeedBinding
 import ru.netology.nmedia.dto.Post
@@ -85,7 +90,7 @@ class FeedFragment() : Fragment() {
             }
 
             override fun onLike(post: Post) {
-                if(appAuth.authStateFlow.value != null) {
+                if (appAuth.authStateFlow.value != null) {
                     viewModel.likeById(post.id)
                 } else {
                     Snackbar.make(
@@ -120,7 +125,15 @@ class FeedFragment() : Fragment() {
                 startActivity(shareIntent)
             }
         })
-        binding.list.adapter = adapter
+
+        binding.list.adapter = adapter.withLoadStateHeaderAndFooter(
+            header = PostLoadingStateAdapter {
+                adapter.retry()
+            },
+            footer = PostLoadingStateAdapter {
+                adapter.retry()
+            }
+        )
 
         viewModel.state.observe(viewLifecycleOwner) { state ->
             binding.progress.isVisible = state.loading || state.refreshing
@@ -153,26 +166,29 @@ class FeedFragment() : Fragment() {
 //            }
 //        }
 
-        lifecycleScope.launchWhenCreated {
-            adapter.loadStateFlow.collectLatest {
-                binding.swipeRefresh.isRefreshing =
-                    it.refresh is LoadState.Loading
-                        || it.append is LoadState.Loading
-                            || it.prepend is LoadState.Loading
+
+        viewLifecycleOwner.lifecycleScope.launch {
+            viewLifecycleOwner.repeatOnLifecycle(Lifecycle.State.STARTED) {
+                viewModel.data.collectLatest(adapter::submitData)
             }
         }
 
-        lifecycleScope.launchWhenCreated {
-            viewModel.data.collectLatest {
-                adapter.submitData(it)
+        viewLifecycleOwner.lifecycleScope.launch {
+            viewLifecycleOwner.repeatOnLifecycle(Lifecycle.State.STARTED) {
+                adapter.loadStateFlow.collectLatest { state ->
+                    binding.swipeRefresh.isRefreshing =
+                        state.refresh is LoadState.Loading
+                }
             }
         }
 
-        lifecycleScope.launchWhenCreated {
-            if(appAuth.authStateFlow.value.id != 0L && appAuth.authStateFlow.value.token != null) {
-                adapter.refresh()
+        viewLifecycleOwner.lifecycleScope.launch {
+            viewLifecycleOwner.repeatOnLifecycle(Lifecycle.State.STARTED) {
+                if (appAuth.authStateFlow.value.id != 0L && appAuth.authStateFlow.value.token != null) {
+                    adapter.refresh()
+                }
             }
-         }
+        }
 
 //        viewModel.data.observe(viewLifecycleOwner) {
 //            val newPost =
@@ -206,21 +222,21 @@ class FeedFragment() : Fragment() {
             }.show()
         }
 
-    binding.swipeRefresh.setOnRefreshListener {
-        adapter.refresh()
-    }
+        binding.swipeRefresh.setOnRefreshListener {
+            adapter.refresh()
+        }
 
-    viewModel.postsLoadError.observe(viewLifecycleOwner)
-    {
-        Toast.makeText(requireContext(), viewModel.postsLoadError.value, Toast.LENGTH_LONG)
-            .show()
-    }
+        viewModel.postsLoadError.observe(viewLifecycleOwner)
+        {
+            Toast.makeText(requireContext(), viewModel.postsLoadError.value, Toast.LENGTH_LONG)
+                .show()
+        }
 
-    viewModel.savePostError.observe(viewLifecycleOwner)
-    {
-        Toast.makeText(requireContext(), viewModel.savePostError.value, Toast.LENGTH_LONG)
-            .show()
-    }
+        viewModel.savePostError.observe(viewLifecycleOwner)
+        {
+            Toast.makeText(requireContext(), viewModel.savePostError.value, Toast.LENGTH_LONG)
+                .show()
+        }
 
 //    viewModel.newerCount.observe(viewLifecycleOwner)
 //    {
@@ -235,13 +251,13 @@ class FeedFragment() : Fragment() {
 //        binding.toNewPostsButton.isVisible = it != 0
 //    }
 
-    binding.toNewPostsButton.isVisible = false
-
-    binding.toNewPostsButton.setOnClickListener {
         binding.toNewPostsButton.isVisible = false
-        viewModel.changeHiddenStatus()
-    }
 
-    return binding.root
-}
+        binding.toNewPostsButton.setOnClickListener {
+            binding.toNewPostsButton.isVisible = false
+            viewModel.changeHiddenStatus()
+        }
+
+        return binding.root
+    }
 }
