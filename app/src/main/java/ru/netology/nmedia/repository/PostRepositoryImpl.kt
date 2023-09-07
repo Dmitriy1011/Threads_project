@@ -1,9 +1,10 @@
 package ru.netology.nmedia.repository
 
 import android.accounts.NetworkErrorException
+import androidx.paging.ExperimentalPagingApi
 import androidx.paging.Pager
 import androidx.paging.PagingConfig
-import dagger.hilt.android.AndroidEntryPoint
+import androidx.paging.map
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.first
@@ -16,12 +17,13 @@ import okhttp3.RequestBody.Companion.toRequestBody
 import ru.netology.nmedia.Auth.AppAuth
 import ru.netology.nmedia.api.PostApiService
 import ru.netology.nmedia.dao.PostDao
+import ru.netology.nmedia.dao.PostRemoteKeyDao
+import ru.netology.nmedia.db.AppDb
 import ru.netology.nmedia.dto.AttachmentType
 import ru.netology.nmedia.dto.Media
 import ru.netology.nmedia.dto.Post
 import ru.netology.nmedia.entity.AttachmentEmbeddable
 import ru.netology.nmedia.entity.PostEntity
-import ru.netology.nmedia.entity.toDto
 import ru.netology.nmedia.entity.toEntity
 import java.io.File
 import java.io.IOException
@@ -30,22 +32,30 @@ import javax.inject.Inject
 
 class PostRepositoryImpl @Inject constructor(
     private val dao: PostDao, //база для LiveData - dao - data access object //dto - data transfer object
-    private val apiService: PostApiService
+    private val apiService: PostApiService,
+    private val postRemoteKeyDao: PostRemoteKeyDao,
+    private val appDb: AppDb
 ) : PostRepository {
 
     @Inject
     lateinit var appAuth: AppAuth
 
-//    override val data: Flow<List<Post>> = dao.getAllVisible().map(List<PostEntity>::toDto)
-
+    @OptIn(ExperimentalPagingApi::class)
     override val data = Pager(
         config = PagingConfig(pageSize = 10, enablePlaceholders = false),
         pagingSourceFactory = {
-            PostPagingSource(
-                apiService
-            )
-        }
+           dao.getPagingSource()
+        },
+        remoteMediator = PostRemoteMediator(
+            apiService = apiService,
+            postDao = dao,
+            postRemoteKeyDao = postRemoteKeyDao,
+            appDb = appDb
+        )
     ).flow
+        .map {
+            it.map(PostEntity::toDto)
+        }
 
     override fun switchHidden() {
         dao.getAllInvisible()

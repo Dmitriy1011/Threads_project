@@ -79,7 +79,7 @@ interface PostApiService {
     ): Response<Token>
 
     @POST("users/push-tokens")
-    suspend fun sendPushToken(@Body body: PushToken) : Response<Unit>
+    suspend fun sendPushToken(@Body body: PushToken): Response<Unit>
 }
 
 //для лоступа к Api создаём Singleton c lazy инициализцеий поля

@@ -1,5 +1,6 @@
 package ru.netology.nmedia.dao
 
+import androidx.paging.PagingSource
 import androidx.room.Dao
 import androidx.room.Insert
 import androidx.room.OnConflictStrategy
@@ -7,10 +8,18 @@ import androidx.room.Query
 import kotlinx.coroutines.flow.Flow
 import ru.netology.nmedia.entity.PostEntity
 
+
+//Query - в этой аннотации мы указали под каким именем нужный параметр должен появится в URL запроса.
+//Path - нid передается не параметром, а частью пути. В этом случае нам поможет аннотация Path.
+    //В строку с именем метода добавляем плэйсхолдер {id} в фигурных скобках. В параметры методов добавляем id с аннотацией Path. В этой аннотации необходимо указать, в какой плэйсхолдер надо будет подставлять значение, пришедшее в id. Указываем "id".
+    //При вызове, Retrofit возьмет значение id и подставит его в строку запроса вместо {id}.
 @Dao
 interface PostDao {
     @Query("SELECT * FROM PostEntity ORDER BY id DESC")
     fun getAll(): Flow<List<PostEntity>>
+
+    @Query("SELECT * FROM PostEntity ORDER BY id DESC")
+    fun getPagingSource(): PagingSource<Int, PostEntity>
 
     @Query("SELECT * FROM PostEntity WHERE hidden = 0 ORDER BY id DESC")
     fun getAllVisible(): Flow<List<PostEntity>>
@@ -50,4 +59,10 @@ interface PostDao {
 
     @Query("DELETE FROM PostEntity WHERE id = :id")
     suspend fun removeById(id: Long)
+
+    @Query("SELECT * FROM PostEntity ORDER BY id DESC")
+    fun pagingSource(): PagingSource<Int, PostEntity>
+
+    @Query("DELETE FROM PostEntity")
+    fun clear()
 }
