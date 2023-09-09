@@ -41,4 +41,5 @@
     <string name="auth_notification_title">Выполнен вход в аккаунт</string>
     <string name="retry">retry</string>
     <string name="retryButton" />
+    <string name="yesterday">Yesterday</string>
 </resources>

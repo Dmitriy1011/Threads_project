@@ -1,6 +1,10 @@
 package ru.netology.nmedia.api
 
 import com.google.firebase.BuildConfig
+import com.google.gson.GsonBuilder
+import com.google.gson.TypeAdapter
+import com.google.gson.stream.JsonReader
+import com.google.gson.stream.JsonWriter
 import dagger.Module
 import dagger.Provides
 import dagger.hilt.InstallIn
@@ -11,6 +15,9 @@ import retrofit2.Retrofit
 import retrofit2.converter.gson.GsonConverterFactory
 import retrofit2.create
 import ru.netology.nmedia.Auth.AppAuth
+import java.time.LocalDateTime
+import java.time.ZoneId
+import java.time.ZoneOffset
 import java.util.concurrent.TimeUnit
 import javax.inject.Singleton
 
@@ -20,6 +27,7 @@ class ApiModule {
     companion object {
         private const val BASE_URL = "http://10.0.2.2:9999/api/slow/"
     }
+
     @Provides
     @Singleton
     fun provideLogging(): HttpLoggingInterceptor = HttpLoggingInterceptor().apply {
@@ -27,6 +35,7 @@ class ApiModule {
             level = HttpLoggingInterceptor.Level.BODY
         }
     }
+
     @Singleton
     @Provides
     fun provideOkHttp( //здесь находится пул потоков
@@ -59,7 +68,26 @@ class ApiModule {
     fun provideRetrofit(
         client: OkHttpClient
     ): Retrofit = Retrofit.Builder()
-        .addConverterFactory(GsonConverterFactory.create())
+        .addConverterFactory(
+            GsonConverterFactory.create(
+                GsonBuilder()
+                    .registerTypeAdapter(
+                        LocalDateTime::class.java,
+                        object : TypeAdapter<LocalDateTime>() {
+                            override fun write(out: JsonWriter?, value: LocalDateTime?) {
+                                value?.toEpochSecond(ZoneOffset.of(ZoneId.systemDefault().id))
+                            }
+
+                            override fun read(reader: JsonReader): LocalDateTime =
+                                LocalDateTime.ofEpochSecond(
+                                    reader.nextLong(),
+                                    0,
+                                    ZoneOffset.of(ZoneId.systemDefault().id)
+                                )
+                        })
+                    .create()
+            )
+        )
         .client(client)
         .baseUrl(BASE_URL)
         .build()

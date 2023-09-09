@@ -11,8 +11,10 @@ import androidx.recyclerview.widget.RecyclerView
 import ru.netology.nmedia.BuildConfig
 import ru.netology.nmedia.R
 import ru.netology.nmedia.databinding.CardAdvertismentBinding
+import ru.netology.nmedia.databinding.CardDateBinding
 import ru.netology.nmedia.databinding.CardPostBinding
 import ru.netology.nmedia.dto.Advertisment
+import ru.netology.nmedia.dto.DateSeparator
 import ru.netology.nmedia.dto.FeedItem
 import ru.netology.nmedia.dto.Post
 import ru.netology.nmedia.handler.load
@@ -27,45 +29,57 @@ interface OnInteractionListener {
     fun onShowImageAsSeparate(post: Post)
 }
 
-class PostsAdapter(
+class FeedAdapter(
     private val onInteractionListener: OnInteractionListener,
-) : PagingDataAdapter<FeedItem, RecyclerView.ViewHolder>(PostDiffCallback()) {
+) : PagingDataAdapter<FeedItem, RecyclerView.ViewHolder>(FeedDiffCallback()) {
+
+    private val typeAdvertisment = 0
+    private val typePost = 1
+    private val typeDate = 2
 
     //получаем тип элемента из данных
 
     override fun getItemViewType(position: Int): Int =
         when (getItem(position)) {
-            is Advertisment -> R.layout.card_advertisment
-            is Post -> R.layout.card_post
+            is Advertisment -> typeAdvertisment
+            is Post -> typePost
+            is DateSeparator -> typeDate
             null -> error("unknown item type")
         }
 
     //создание ViewHolder
-    override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): RecyclerView.ViewHolder =
-        when (viewType) {
-            R.layout.card_post -> {
-                val binding =
-                    CardPostBinding.inflate(LayoutInflater.from(parent.context), parent, false)
-                PostViewHolder(binding, onInteractionListener)
+    override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): RecyclerView.ViewHolder {
+        val layoutInflater = LayoutInflater.from(parent.context)
+        return when (viewType) {
+            typePost -> PostViewHolder(
+                CardPostBinding.inflate(layoutInflater, parent, false),
+                onInteractionListener
+            )
+
+            typeAdvertisment -> {
+                AdvertismentViewHolder(
+                    CardAdvertismentBinding.inflate(layoutInflater, parent, false),
+                    onInteractionListener
+                )
             }
 
-            R.layout.card_advertisment -> {
-                val binding = CardAdvertismentBinding.inflate(
-                    LayoutInflater.from(parent.context),
-                    parent,
-                    false
+            typeDate -> {
+                DateViewHolder(
+                    CardDateBinding.inflate(layoutInflater, parent, false),
+                    onInteractionListener
                 )
-                AdvertismentViewHolder(binding)
             }
 
             else -> error("unknown viewtype: $viewType")
         }
+    }
 
     //заполнение ViewHolder данными
     override fun onBindViewHolder(holder: RecyclerView.ViewHolder, position: Int) {
         when (val item = getItem(position)) {
             is Advertisment -> (holder as AdvertismentViewHolder).bind(item)   //здесь происходит приведение типов вьюхолдер
             is Post -> (holder as PostViewHolder).bind(item)
+            is DateSeparator -> (holder as DateViewHolder).bind(item)
             null -> error("unknown item type")
         }
     }
@@ -81,7 +95,7 @@ class PostViewHolder(
     fun bind(post: Post) {
         binding.apply {
             author.text = post.author
-            published.text = post.published
+//            published.text = post.published
             content.text = post.content
             // в адаптере
             like.isChecked = post.likedByMe
@@ -141,14 +155,30 @@ class PostViewHolder(
 
 
 class AdvertismentViewHolder(
-    private val binding: CardAdvertismentBinding
+    private val binding: CardAdvertismentBinding,
+    private val onInteractionListener: OnInteractionListener
 ) : RecyclerView.ViewHolder(binding.root) {
     fun bind(ad: Advertisment) {
         binding.advertismentImage.load("${BuildConfig.BASE_URL}media/${ad.image}")
     }
 }
 
-class PostDiffCallback : DiffUtil.ItemCallback<FeedItem>() {
+class DateViewHolder(
+    private val binding: CardDateBinding,
+    private val onInteractionListener: OnInteractionListener
+) : RecyclerView.ViewHolder(binding.root) {
+    fun bind(separator: DateSeparator) {
+        val resource = when (separator.type) {
+            DateSeparator.Type.TODAY -> R.string.today
+            DateSeparator.Type.YESTERDAY -> R.string.yesterday
+            DateSeparator.Type.WEEK_AGO -> R.string.weekAgo
+        }
+
+        binding.root.setText(resource)
+    }
+}
+
+class FeedDiffCallback : DiffUtil.ItemCallback<FeedItem>() {
     override fun areItemsTheSame(oldItem: FeedItem, newItem: FeedItem): Boolean {
         if (oldItem::class != newItem::class) { //сверяем классы элементов, чтобы не приравнять пост к рекламе
             return false

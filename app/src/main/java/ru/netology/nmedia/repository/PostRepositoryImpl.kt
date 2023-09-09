@@ -5,7 +5,6 @@ import androidx.paging.ExperimentalPagingApi
 import androidx.paging.Pager
 import androidx.paging.PagingConfig
 import androidx.paging.PagingData
-import androidx.paging.insertSeparators
 import androidx.paging.map
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.Flow
@@ -21,9 +20,7 @@ import ru.netology.nmedia.api.PostApiService
 import ru.netology.nmedia.dao.PostDao
 import ru.netology.nmedia.dao.PostRemoteKeyDao
 import ru.netology.nmedia.db.AppDb
-import ru.netology.nmedia.dto.Advertisment
 import ru.netology.nmedia.dto.AttachmentType
-import ru.netology.nmedia.dto.FeedItem
 import ru.netology.nmedia.dto.Media
 import ru.netology.nmedia.dto.Post
 import ru.netology.nmedia.entity.AttachmentEmbeddable
@@ -33,7 +30,6 @@ import java.io.File
 import java.io.IOException
 import java.util.concurrent.CancellationException
 import javax.inject.Inject
-import kotlin.random.Random
 
 class PostRepositoryImpl @Inject constructor(
     private val dao: PostDao, //база для LiveData - dao - data access object //dto - data transfer object
@@ -46,7 +42,7 @@ class PostRepositoryImpl @Inject constructor(
     lateinit var appAuth: AppAuth
 
     @OptIn(ExperimentalPagingApi::class)
-    override val data: Flow<PagingData<FeedItem>> = Pager(
+    override val data: Flow<PagingData<Post>> = Pager(
         config = PagingConfig(pageSize = 10, enablePlaceholders = false),
         pagingSourceFactory = {
             dao.getPagingSource()
@@ -58,16 +54,19 @@ class PostRepositoryImpl @Inject constructor(
             appDb = appDb
         )
     ).flow
-        .map {
-            it.map(PostEntity::toDto)
-                .insertSeparators { prev, _ ->
-                    if (prev?.id?.rem(5) == 0L) {
-                        Advertisment(Random.nextLong(), "figma.jpg")
-                    } else {
-                        null
-                    }
-                }
+        .map { pagingData ->
+            pagingData.map(PostEntity::toDto)
         }
+//        .map {
+//            it.map(PostEntity::toDto)
+//                .insertSeparators { prev, _ ->
+//                    if (prev?.id?.rem(5) == 0L) {
+//                        Advertisment(Random.nextLong(), "https://netology.ru","figma.jpg")
+//                    } else {
+//                        null
+//                    }
+//                }
+
 
     override fun switchHidden() {
         dao.getAllInvisible()

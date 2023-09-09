@@ -9,15 +9,13 @@ import androidx.paging.cachedIn
 import androidx.paging.insertSeparators
 import androidx.paging.map
 import dagger.hilt.android.lifecycle.HiltViewModel
-import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.flatMapLatest
-import kotlinx.coroutines.flow.flowOn
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.launch
 import ru.netology.nmedia.Auth.AppAuth
-import ru.netology.nmedia.dto.Advertisment
+import ru.netology.nmedia.dto.DateSeparator
 import ru.netology.nmedia.dto.FeedItem
 import ru.netology.nmedia.dto.Post
 import ru.netology.nmedia.model.FeedModelState
@@ -26,7 +24,6 @@ import ru.netology.nmedia.repository.PostRepository
 import ru.netology.nmedia.util.SingleLiveEvent
 import java.time.LocalDateTime
 import javax.inject.Inject
-import kotlin.random.Random
 
 private val empty = Post(
     id = 0,
@@ -40,6 +37,28 @@ private val empty = Post(
     ownedByMe = false,
 )
 
+private val today = LocalDateTime.now()
+private val yesterday = today.minusDays(1)
+private val weekAgo = today.minusDays(2)
+
+fun Post?.isToday(): Boolean {
+    if (this == null) return false
+
+    return published.year == today.year && published.dayOfYear == today.dayOfYear
+}
+
+fun Post?.isYesterday(): Boolean {
+    if (this == null) return false
+
+    return published.year == yesterday.year && published.dayOfYear == yesterday.dayOfYear
+}
+
+fun Post?.isWeekAgo(): Boolean {
+    if (this == null) return false
+
+    return published.year == weekAgo.year && published.dayOfYear < weekAgo.dayOfYear
+}
+
 @HiltViewModel
 @ExperimentalCoroutinesApi
 class PostViewModel @Inject constructor(
@@ -51,18 +70,26 @@ class PostViewModel @Inject constructor(
     val state: LiveData<FeedModelState>
         get() = _state
 
-    private val cached: Flow<PagingData<FeedItem>> = repository.data.map { pagingData ->
-        pagingData.insertSeparators(
-            generator = { prev, _ ->
-                if (prev?.id?.rem(5) != 0L) null
-                else Advertisment(
-                    Random.nextLong(),
-                    "https://netology.ru",
-                    "figma.jpg"
-                )
-            }
-        )
-    }.cachedIn(viewModelScope)
+    private val cached: Flow<PagingData<FeedItem>> = repository
+        .data
+        .map { pagingData ->
+            pagingData.insertSeparators(
+                generator = { before, after ->
+                    when {
+                        before == null && after.isToday() -> {
+                            DateSeparator(DateSeparator.Type.TODAY)
+                        }
+                        before == null || before.isToday() && after.isYesterday() -> {
+                            DateSeparator(DateSeparator.Type.YESTERDAY)
+                        }
+                        before.isYesterday() && after.isWeekAgo() -> {
+                            DateSeparator(DateSeparator.Type.YESTERDAY)
+                        }
+                        else -> null
+                    }
+                }
+            )
+        }.cachedIn(viewModelScope)
 
     val data: Flow<PagingData<FeedItem>> =
         appAuth.authStateFlow.flatMapLatest { (_myId, _) ->

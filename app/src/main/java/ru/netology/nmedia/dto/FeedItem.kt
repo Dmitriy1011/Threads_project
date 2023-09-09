@@ -32,3 +32,16 @@ data class Attachment(
     val description: String?,
     val type: AttachmentType
 )
+
+//в этом классе на основе типа выявляем id
+data class DateSeparator(
+    val type: Type
+): FeedItem {
+    override val id: Long = type.ordinal.toLong()
+    //где ordinal - номер по порядку
+    enum class Type {
+        TODAY,
+        YESTERDAY,
+        WEEK_AGO
+    }
+}

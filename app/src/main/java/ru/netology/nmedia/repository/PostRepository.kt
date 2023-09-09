@@ -8,7 +8,7 @@ import ru.netology.nmedia.dto.Post
 import java.io.File
 
 interface PostRepository {
-    val data: Flow<PagingData<FeedItem>> //по этой подписке список постов приходит из базы через viewmodel во фрагмент независимо от того, что происходит с сервером
+    val data: Flow<PagingData<Post>> //по этой подписке список постов приходит из базы через viewmodel во фрагмент независимо от того, что происходит с сервером
     fun getNewerCount(): Flow<Int>
     suspend fun save(post: Post)
     suspend fun edit(post: Post)
