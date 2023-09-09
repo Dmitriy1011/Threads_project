@@ -1,6 +1,7 @@
 package ru.netology.nmedia.dto
 
 import ru.netology.nmedia.entity.AttachmentEmbeddable
+import java.time.LocalDateTime
 
 //sealed означает, что FeedItem содержит всего 2 реализации: Post и Advertisment
 sealed interface FeedItem {
@@ -12,7 +13,7 @@ data class Post(
     val authorId: Long,
     val author: String,
     val content: String,
-    val published: String,
+    val published: LocalDateTime,
     val likedByMe: Boolean,
     val likes: Int = 0,
     val authorAvatar: String,
@@ -22,6 +23,7 @@ data class Post(
 
 data class Advertisment(
     override val id: Long,
+    val url: String,
     val image: String
 ): FeedItem
 

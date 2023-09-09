@@ -5,6 +5,8 @@ import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import androidx.paging.PagingData
+import androidx.paging.cachedIn
+import androidx.paging.insertSeparators
 import androidx.paging.map
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.Dispatchers
@@ -15,13 +17,16 @@ import kotlinx.coroutines.flow.flowOn
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.launch
 import ru.netology.nmedia.Auth.AppAuth
+import ru.netology.nmedia.dto.Advertisment
 import ru.netology.nmedia.dto.FeedItem
 import ru.netology.nmedia.dto.Post
 import ru.netology.nmedia.model.FeedModelState
 import ru.netology.nmedia.model.PhotoModel
 import ru.netology.nmedia.repository.PostRepository
 import ru.netology.nmedia.util.SingleLiveEvent
+import java.time.LocalDateTime
 import javax.inject.Inject
+import kotlin.random.Random
 
 private val empty = Post(
     id = 0,
@@ -30,7 +35,7 @@ private val empty = Post(
     author = "",
     likedByMe = false,
     likes = 0,
-    published = "",
+    published = LocalDateTime.now(),
     authorAvatar = "",
     ownedByMe = false,
 )
@@ -46,17 +51,27 @@ class PostViewModel @Inject constructor(
     val state: LiveData<FeedModelState>
         get() = _state
 
-    val data: Flow<PagingData<FeedItem>> = appAuth.authStateFlow.flatMapLatest { (_myId, _) ->
-        repository.data.map { posts ->
-            posts.map { post ->
-                if (post is Post) {
-                    post.copy(ownedByMe = post.authorId == _myId)
-                } else {
-                    post
+    private val cached: Flow<PagingData<FeedItem>> = repository.data.map { pagingData ->
+        pagingData.insertSeparators(
+            generator = { prev, _ ->
+                if (prev?.id?.rem(5) != 0L) null
+                else Advertisment(
+                    Random.nextLong(),
+                    "https://netology.ru",
+                    "figma.jpg"
+                )
+            }
+        )
+    }.cachedIn(viewModelScope)
+
+    val data: Flow<PagingData<FeedItem>> =
+        appAuth.authStateFlow.flatMapLatest { (_myId, _) ->
+            cached.map { pagingData ->
+                pagingData.map { feedItem ->
+                    if (feedItem !is Post) feedItem else feedItem.copy(ownedByMe = feedItem.authorId == _myId)
                 }
             }
         }
-    }.flowOn(Dispatchers.Default)
 
     private val edited = MutableLiveData(empty)
 
