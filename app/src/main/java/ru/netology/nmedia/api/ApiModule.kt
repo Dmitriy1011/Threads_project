@@ -15,6 +15,7 @@ import retrofit2.Retrofit
 import retrofit2.converter.gson.GsonConverterFactory
 import retrofit2.create
 import ru.netology.nmedia.Auth.AppAuth
+import java.time.Instant
 import java.time.LocalDateTime
 import java.time.ZoneId
 import java.time.ZoneOffset
@@ -75,14 +76,15 @@ class ApiModule {
                         LocalDateTime::class.java,
                         object : TypeAdapter<LocalDateTime>() {
                             override fun write(out: JsonWriter?, value: LocalDateTime?) {
-                                value?.toEpochSecond(ZoneOffset.of(ZoneId.systemDefault().id))
+                                value?.toEpochSecond(ZoneOffset.UTC)
                             }
 
                             override fun read(reader: JsonReader): LocalDateTime =
-                                LocalDateTime.ofEpochSecond(
-                                    reader.nextLong(),
-                                    0,
-                                    ZoneOffset.of(ZoneId.systemDefault().id)
+                                LocalDateTime.ofInstant(
+                                    Instant.ofEpochSecond(
+                                        reader.nextLong()
+                                    ),
+                                    ZoneId.systemDefault()
                                 )
                         })
                     .create()

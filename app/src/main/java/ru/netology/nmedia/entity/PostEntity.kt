@@ -6,6 +6,7 @@ import androidx.room.PrimaryKey
 import ru.netology.nmedia.dto.Attachment
 import ru.netology.nmedia.dto.AttachmentType
 import ru.netology.nmedia.dto.Post
+import java.time.Instant
 import java.time.LocalDateTime
 import java.time.ZoneId
 import java.time.ZoneOffset
@@ -30,7 +31,12 @@ data class PostEntity(
         authorId = authorId,
         author = author,
         content = content,
-        published = LocalDateTime.ofEpochSecond(published, 0, ZoneOffset.of(ZoneId.systemDefault().id)),
+        published = LocalDateTime.ofInstant(
+            Instant.ofEpochSecond(
+                published,
+            ),
+            ZoneId.systemDefault()
+        ),
         likedByMe = likedByMe,
         likes = likes,
         authorAvatar = authorAvatar,
@@ -44,7 +50,7 @@ data class PostEntity(
                 dto.authorId,
                 dto.author,
                 dto.content,
-                dto.published.toEpochSecond(ZoneOffset.of(ZoneId.systemDefault().id)),
+                dto.published.atZone(ZoneId.systemDefault()).toEpochSecond(),
                 dto.likedByMe,
                 dto.likes,
                 dto.authorAvatar,
@@ -61,13 +67,13 @@ data class AttachmentEmbeddable(
     val type: AttachmentType
 ) {
     fun toDto() = Attachment(url, description, type)
+
     companion object {
         fun fromDto(dto: Attachment?) = dto?.let {
             AttachmentEmbeddable(it.url, it.description, it.type)
         }
     }
 }
-
 
 
 fun List<PostEntity>.toDto(): List<Post> = map(PostEntity::toDto)

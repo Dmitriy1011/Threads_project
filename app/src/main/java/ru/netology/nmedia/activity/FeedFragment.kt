@@ -180,7 +180,7 @@ class FeedFragment() : Fragment() {
 
         viewLifecycleOwner.lifecycleScope.launch {
             viewLifecycleOwner.repeatOnLifecycle(Lifecycle.State.STARTED) {
-                if (appAuth.authStateFlow.value.id != 0L && appAuth.authStateFlow.value.token != null) {
+                appAuth.authStateFlow.collect {
                     adapter.refresh()
                 }
             }

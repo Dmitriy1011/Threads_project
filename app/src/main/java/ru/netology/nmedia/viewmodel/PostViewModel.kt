@@ -5,6 +5,7 @@ import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import androidx.paging.PagingData
+import androidx.paging.TerminalSeparatorType
 import androidx.paging.cachedIn
 import androidx.paging.insertSeparators
 import androidx.paging.map
@@ -74,6 +75,7 @@ class PostViewModel @Inject constructor(
         .data
         .map { pagingData ->
             pagingData.insertSeparators(
+                terminalSeparatorType = TerminalSeparatorType.SOURCE_COMPLETE,
                 generator = { before, after ->
                     when {
                         before == null && after.isToday() -> {

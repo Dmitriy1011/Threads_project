@@ -68,10 +68,10 @@ class AppActivity : AppCompatActivity(R.layout.activity_app) {
 
         val authViewModel by viewModels<AuthViewModel>()
 
-        val currentMenuProvider: MenuProvider? = null
+        var currentMenuProvider: MenuProvider? = null
 
         authViewModel.data.observe(this) {
-            currentMenuProvider?.let { ::removeMenuProvider }
+            currentMenuProvider?.let(::removeMenuProvider)
             addMenuProvider(object : MenuProvider {
                 override fun onCreateMenu(menu: Menu, menuInflater: MenuInflater) {
                     menuInflater.inflate(R.menu.menu_auth, menu)
@@ -103,6 +103,8 @@ class AppActivity : AppCompatActivity(R.layout.activity_app) {
 
                         else -> false
                     }
+            }.also {
+                   currentMenuProvider = it
             }, this)
         }
     }
