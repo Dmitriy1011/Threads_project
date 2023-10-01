@@ -60,7 +60,6 @@ data class PostEntity(
     }
 }
 
-
 data class AttachmentEmbeddable(
     val url: String,
     val description: String?,

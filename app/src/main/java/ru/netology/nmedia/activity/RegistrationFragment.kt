@@ -9,7 +9,6 @@ import androidx.fragment.app.activityViewModels
 import androidx.navigation.fragment.findNavController
 import ru.netology.nmedia.R
 import ru.netology.nmedia.databinding.FragmentRegistrationBinding
-import ru.netology.nmedia.dto.Media
 import ru.netology.nmedia.viewmodel.RegistrationViewModel
 
 

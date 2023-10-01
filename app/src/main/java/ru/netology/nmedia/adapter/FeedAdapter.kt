@@ -74,6 +74,23 @@ class FeedAdapter(
         }
     }
 
+
+    override fun onBindViewHolder(
+        holder: RecyclerView.ViewHolder,
+        position: Int,
+        payloads: MutableList<Any>
+    ) {
+        if(payloads.isEmpty()) {
+            onBindViewHolder(holder, position)
+        } else {
+            payloads.forEach {
+                (it as? Payload)?.let { payload ->
+                    (holder as PostViewHolder).bindPayload(payload)
+                }
+            }
+        }
+    }
+
     //заполнение ViewHolder данными
     override fun onBindViewHolder(holder: RecyclerView.ViewHolder, position: Int) {
         when (val item = getItem(position)) {
@@ -84,6 +101,13 @@ class FeedAdapter(
         }
     }
 }
+
+
+//избавление от мерцания
+data class Payload(
+    val likedByMe: Boolean? = null,
+    val content: String? = null
+)
 
 class PostViewHolder(
     private val binding: CardPostBinding,
@@ -151,6 +175,16 @@ class PostViewHolder(
             }
         }
     }
+
+    fun bindPayload(payload: Payload) {
+        payload.likedByMe?.let {
+            binding.like.isChecked = it
+        }
+
+        payload.content.let {
+            binding.content.text = it
+        }
+    }
 }
 
 
@@ -188,5 +222,14 @@ class FeedDiffCallback : DiffUtil.ItemCallback<FeedItem>() {
 
     override fun areContentsTheSame(oldItem: FeedItem, newItem: FeedItem): Boolean {
         return oldItem == newItem
+    }
+
+    override fun getChangePayload(oldItem: FeedItem, newItem: FeedItem): Any {
+        val oldOldItem = oldItem as? Post
+        val newNewItem = newItem as? Post
+        return Payload(
+            likedByMe = newNewItem?.likedByMe.takeIf { it != oldOldItem?.likedByMe },
+            content = newNewItem?.content.takeIf { it != oldOldItem?.content }
+        )
     }
 }
