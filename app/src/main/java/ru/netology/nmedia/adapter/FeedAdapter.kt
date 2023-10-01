@@ -122,7 +122,7 @@ class PostViewHolder(
 //            published.text = post.published
             content.text = post.content
             // в адаптере
-            like.isChecked = post.likedByMe
+//            like.isChecked = post.likedByMe
             like.text = "${post.likes}"
 
             binding.attachmentImage.isVisible = !post.attachment?.url.isNullOrBlank()
